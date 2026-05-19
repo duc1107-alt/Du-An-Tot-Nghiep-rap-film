@@ -1,0 +1,135 @@
+import React, { useState } from 'react';
+import { User, Mail, Lock, Phone, UserPlus } from 'lucide-react';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import useAuth from '../../hooks/useAuth';
+
+export const RegisterForm = ({ onSuccess }) => {
+  const { register, loading, error } = useAuth();
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    phone: '',
+  });
+  const [formErrors, setFormErrors] = useState({});
+
+  const validate = () => {
+    const errors = {};
+    if (!formData.username.trim()) {
+      errors.username = 'Username is required';
+    } else if (formData.username.trim().length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Please provide a valid email';
+    }
+
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+
+    if (formData.phone && !/^\d{10,11}$/.test(formData.phone)) {
+      errors.phone = 'Phone number must be 10-11 digits';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (formErrors[e.target.name]) {
+      setFormErrors({ ...formErrors, [e.target.name]: '' });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    try {
+      await register(
+        formData.username,
+        formData.email,
+        formData.password,
+        formData.phone
+      );
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      // Handled by useAuth error state
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm text-center font-medium">
+          {error}
+        </div>
+      )}
+
+      <Input
+        name="username"
+        label="Username"
+        placeholder="johndoe"
+        value={formData.username}
+        onChange={handleChange}
+        error={formErrors.username}
+        icon={<User size={18} />}
+        required
+      />
+
+      <Input
+        name="email"
+        type="email"
+        label="Email Address"
+        placeholder="yourname@gmail.com"
+        value={formData.email}
+        onChange={handleChange}
+        error={formErrors.email}
+        icon={<Mail size={18} />}
+        required
+      />
+
+      <Input
+        name="phone"
+        label="Phone Number"
+        placeholder="0123456789"
+        value={formData.phone}
+        onChange={handleChange}
+        error={formErrors.phone}
+        icon={<Phone size={18} />}
+      />
+
+      <Input
+        name="password"
+        type="password"
+        label="Password"
+        placeholder="••••••••"
+        value={formData.password}
+        onChange={handleChange}
+        error={formErrors.password}
+        icon={<Lock size={18} />}
+        required
+      />
+
+      <Button
+        type="submit"
+        variant="primary"
+        loading={loading}
+        className="w-full mt-2"
+        icon={<UserPlus size={18} />}
+      >
+        Create Account
+      </Button>
+    </form>
+  );
+};
+
+export default RegisterForm;
