@@ -32,21 +32,21 @@ export const RegisterPage = () => {
             <Film className="text-white" size={28} />
           </div>
           <h2 className="text-2xl font-black text-white uppercase tracking-wider text-center">
-            Create <span className="text-brand">Nova Cinematic</span> Account
+            Tạo tài khoản <span className="text-brand">Nova Cinematic</span>
           </h2>
-          <p className="text-xs text-zinc-500 text-center">Register today to enjoy cinematic benefits.</p>
+          <p className="text-xs text-zinc-500 text-center">Đăng ký ngay hôm nay để tận hưởng các ưu đãi điện ảnh.</p>
         </div>
 
         {/* Form */}
         <RegisterForm onSuccess={handleRegisterSuccess} />
 
         <div className="text-center text-xs font-semibold text-zinc-500 border-t border-dark-border/40 pt-4">
-          <span>Already have an account? </span>
+          <span>Đã có tài khoản? </span>
           <Link
             to={`/login?redirect=${encodeURIComponent(redirect)}`}
             className="text-brand font-black hover:underline"
           >
-            Sign In
+            Đăng nhập
           </Link>
         </div>
       </div>

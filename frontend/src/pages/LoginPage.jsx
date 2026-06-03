@@ -32,21 +32,21 @@ export const LoginPage = () => {
             <Film className="text-white" size={28} />
           </div>
           <h2 className="text-2xl font-black text-white uppercase tracking-wider text-center">
-            Sign In to <span className="text-brand">Nova Cinematic</span>
+            Đăng nhập vào <span className="text-brand">Nova Cinematic</span>
           </h2>
-          <p className="text-xs text-zinc-500 text-center">Select hot seats and proceed checkout in seconds.</p>
+          <p className="text-xs text-zinc-500 text-center">Chọn ghế ngồi ưng ý và thanh toán chỉ trong vài giây.</p>
         </div>
 
         {/* Form */}
         <LoginForm onSuccess={handleLoginSuccess} />
 
         <div className="text-center text-xs font-semibold text-zinc-500 border-t border-dark-border/40 pt-4">
-          <span>New to Nova Cinematic? </span>
+          <span>Chưa có tài khoản Nova Cinematic? </span>
           <Link
             to={`/register?redirect=${encodeURIComponent(redirect)}`}
             className="text-brand font-black hover:underline"
           >
-            Create an Account
+            Tạo tài khoản
           </Link>
         </div>
       </div>

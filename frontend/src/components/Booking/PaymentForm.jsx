@@ -17,15 +17,15 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
     if (method !== 'card') return true;
 
     const err = {};
-    if (!cardData.holder.trim()) err.holder = 'Cardholder name is required';
+    if (!cardData.holder.trim()) err.holder = 'Tên chủ thẻ là bắt buộc';
     if (!/^\d{16}$/.test(cardData.number.replace(/\s+/g, ''))) {
-      err.number = 'Invalid card number (16 digits required)';
+      err.number = 'Số thẻ không hợp lệ (yêu cầu 16 chữ số)';
     }
     if (!/^\d{2}\/\d{2}$/.test(cardData.expiry)) {
-      err.expiry = 'Use MM/YY format';
+      err.expiry = 'Sử dụng định dạng MM/YY';
     }
     if (!/^\d{3}$/.test(cardData.cvv)) {
-      err.cvv = 'Invalid CVV (3 digits)';
+      err.cvv = 'CVV không hợp lệ (3 chữ số)';
     }
 
     setErrors(err);
@@ -49,7 +49,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
     <div className="bg-dark-card border border-dark-border p-6 rounded-3xl space-y-6 shadow-xl">
       <div>
         <h3 className="text-lg font-black text-zinc-200 border-b border-dark-border pb-3">
-          Select Payment Method
+          Chọn Phương Thức Thanh Toán
         </h3>
       </div>
 
@@ -65,7 +65,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           }`}
         >
           <CreditCard size={20} className="mb-2" />
-          <span>Card Payment</span>
+          <span>Thẻ Tín Dụng</span>
         </button>
         
         <button
@@ -78,7 +78,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           }`}
         >
           <Wallet size={20} className="mb-2 text-pink-500" />
-          <span>MoMo Wallet</span>
+          <span>Ví MoMo</span>
         </button>
 
         <button
@@ -91,7 +91,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           }`}
         >
           <Wallet size={20} className="mb-2 text-blue-500" />
-          <span>VNPay Wallet</span>
+          <span>Ví VNPay</span>
         </button>
       </div>
 
@@ -100,7 +100,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
         <form onSubmit={handlePay} className="space-y-4 pt-2">
           <Input
             name="holder"
-            label="Cardholder Name"
+            label="Tên Chủ Thẻ"
             placeholder="NGUYEN VAN A"
             value={cardData.holder}
             onChange={handleCardChange}
@@ -110,7 +110,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
 
           <Input
             name="number"
-            label="Card Number"
+            label="Số Thẻ"
             placeholder="1234 5678 1234 5678"
             maxLength={19}
             value={cardData.number}
@@ -122,7 +122,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           <div className="grid grid-cols-2 gap-4">
             <Input
               name="expiry"
-              label="Expiry Date"
+              label="Ngày Hết Hạn"
               placeholder="MM/YY"
               maxLength={5}
               value={cardData.expiry}
@@ -133,7 +133,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             <Input
               name="cvv"
               type="password"
-              label="CVV"
+              label="Mã CVV"
               placeholder="•••"
               maxLength={3}
               value={cardData.cvv}
@@ -149,7 +149,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             loading={loading}
             className="w-full mt-4 py-3"
           >
-            Confirm & Pay {pricing.grandTotal.toLocaleString()} VND
+            Xác Nhận & Thanh Toán {pricing.grandTotal.toLocaleString()} VNĐ
           </Button>
         </form>
       )}
@@ -161,11 +161,11 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             <div className="w-32 h-32 bg-white p-2 rounded-xl mx-auto flex items-center justify-center border border-zinc-200">
               {/* Simulated QR Code using CSS */}
               <div className="w-full h-full bg-zinc-950 flex flex-wrap items-center justify-center p-3 text-[10px] text-zinc-500 font-bold uppercase select-none tracking-widest leading-normal text-center rounded">
-                QR CODE SIMULATION
+                MÔ PHỎNG MÃ QR
               </div>
             </div>
             <p className="text-xs text-zinc-400 font-semibold leading-relaxed">
-              Scan this QR code using your <span className="capitalize font-black text-white">{method}</span> app to settle payment.
+              Quét mã QR này bằng ứng dụng <span className="capitalize font-black text-white">{method}</span> của bạn để hoàn tất thanh toán.
             </p>
           </div>
 
@@ -175,7 +175,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             loading={loading}
             className="w-full py-3"
           >
-            I have completed payment
+            Tôi đã thanh toán
           </Button>
         </div>
       )}

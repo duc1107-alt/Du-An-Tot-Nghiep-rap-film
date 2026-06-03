@@ -28,12 +28,12 @@ export const HomePage = () => {
   const nowShowingMovies = movies.filter((m) => m.status === 'now-showing');
   const comingSoonMovies = movies.filter((m) => m.status === 'coming-soon');
 
-  // Featured banner movie (first movie or custom)
+  // Phim nổi bật trên banner (phim đầu tiên hoặc tùy chỉnh)
   const featured = nowShowingMovies[0] || movies[0];
 
   return (
     <div className="space-y-12 pb-16">
-      {/* 1. Cinematic Hero Banner Showcase */}
+      {/* 1. Banner giới thiệu phim nổi bật */}
       {featured && (
         <div className="relative w-full aspect-[21/9] min-h-[300px] md:min-h-[450px] rounded-3xl overflow-hidden shadow-2xl bg-zinc-950 border border-dark-border">
           <img
@@ -48,7 +48,7 @@ export const HomePage = () => {
           {/* Banner Content overlay */}
           <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-12 md:px-16 max-w-2xl space-y-4">
             <span className="text-[10px] font-black bg-brand px-3 py-1 rounded text-white tracking-widest uppercase w-max select-none shadow-md">
-              Featured Release
+              Phim Nổi Bật
             </span>
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight drop-shadow">
               {featured.title}
@@ -59,12 +59,12 @@ export const HomePage = () => {
             <div className="flex items-center gap-4 pt-2">
               <Link to={`/movies/${featured._id}`}>
                 <Button variant="primary" className="py-2.5 px-6 font-bold text-sm shadow-glass-brand">
-                  Book Now
+                  Đặt Vé Ngay
                 </Button>
               </Link>
               <Link to={`/movies/${featured._id}`}>
                 <Button variant="glass" className="py-2.5 px-6 font-bold text-sm">
-                  Watch Trailer
+                  Xem Trailer
                 </Button>
               </Link>
             </div>
@@ -72,24 +72,24 @@ export const HomePage = () => {
         </div>
       )}
 
-      {/* 2. Interactive Navigation Filters Bar */}
+      {/* 2. Thanh bộ lọc điều hướng tương tác */}
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-dark-border pb-4">
           <h2 className="text-xl md:text-3xl font-black text-white flex items-center gap-2 tracking-tight">
-            <Compass className="text-brand" size={24} /> Explore Releases
+            <Compass className="text-brand" size={24} /> Khám Phá Phim
           </h2>
         </div>
 
         <MovieFilter filters={filters} onChange={handleFilterChange} />
       </div>
 
-      {/* 3. Movies List Segment Grid */}
+      {/* 3. Lưới danh sách phim */}
       <div>
         {loading ? (
           <Loading />
         ) : error ? (
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-center font-medium">
-            Error loading movies: {error}
+            Lỗi khi tải danh sách phim: {error}
           </div>
         ) : (
           <MovieList movies={movies} />

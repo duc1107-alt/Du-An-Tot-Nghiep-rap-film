@@ -33,14 +33,14 @@ export const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
           <Link to="/" className={`${isActive('/')} transition-colors`}>
-            Home
+            Trang chủ
           </Link>
           <Link to="/movies" className={`${isActive('/movies')} transition-colors`}>
-            Movies
+            Phim
           </Link>
           {isAuthenticated && (
             <Link to="/history" className={`${isActive('/history')} flex items-center gap-1.5 transition-colors`}>
-              <History size={16} /> My Tickets
+              <History size={16} /> Vé của tôi
             </Link>
           )}
         </nav>
@@ -55,7 +55,7 @@ export const Header = () => {
                   className="hidden sm:flex items-center space-x-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-all duration-300"
                 >
                   <LayoutDashboard size={14} />
-                  <span>Admin Panel</span>
+                  <span>Quản trị</span>
                 </Link>
               )}
               
@@ -70,7 +70,7 @@ export const Header = () => {
               <button
                 onClick={handleLogout}
                 className="text-zinc-400 hover:text-brand transition-colors p-2 rounded-lg hover:bg-zinc-900"
-                title="Log Out"
+                title="Đăng xuất"
               >
                 <LogOut size={18} />
               </button>
@@ -81,13 +81,13 @@ export const Header = () => {
                 to="/login"
                 className="text-zinc-300 hover:text-white text-sm font-semibold px-4 py-2 transition-colors"
               >
-                Sign In
+                Đăng nhập
               </Link>
               <Link
                 to="/register"
                 className="bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(229,9,20,0.3)] transition-all transform active:scale-95"
               >
-                Register
+                Đăng ký
               </Link>
             </div>
           )}
