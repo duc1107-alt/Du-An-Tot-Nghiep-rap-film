@@ -4,34 +4,34 @@ import { SEAT_TYPES } from '../../utils/constants';
 export const SeatLegend = () => {
   return (
     <div className="flex flex-wrap items-center justify-center gap-6 bg-dark-card border border-dark-border px-6 py-3.5 rounded-2xl max-w-2xl mx-auto text-xs font-semibold text-zinc-400 select-none">
-      {/* 1. Standard */}
+      {/* 1. Ghế thường */}
       <div className="flex items-center space-x-2">
         <span className="w-5 h-5 rounded bg-zinc-700 border border-zinc-600 block" />
-        <span>Standard Seat</span>
+        <span>Ghế thường</span>
       </div>
 
-      {/* 2. VIP */}
+      {/* 2. Ghế VIP */}
       <div className="flex items-center space-x-2">
         <span className="w-5 h-5 rounded bg-amber-600 border border-amber-400 block" />
-        <span>VIP Accent (+20k)</span>
+        <span>Ghế VIP (+20k)</span>
       </div>
 
-      {/* 3. Couple */}
+      {/* 3. Ghế đôi */}
       <div className="flex items-center space-x-2">
         <span className="w-9 h-5 rounded bg-pink-600 border border-pink-400 block" />
-        <span>Sweetbox Couple (+40k)</span>
+        <span>Ghế đôi Sweetbox (+40k)</span>
       </div>
 
-      {/* 4. Selected */}
+      {/* 4. Đang chọn */}
       <div className="flex items-center space-x-2">
         <span className="w-5 h-5 rounded bg-brand block shadow-md" />
-        <span>Selected</span>
+        <span>Đang chọn</span>
       </div>
 
-      {/* 5. Sold / Booked */}
+      {/* 5. Đã bán / Đã đặt */}
       <div className="flex items-center space-x-2">
         <span className="w-5 h-5 rounded bg-zinc-900 border border-zinc-800 opacity-40 block" />
-        <span>Sold / Reserved</span>
+        <span>Đã bán / Đã đặt</span>
       </div>
     </div>
   );
