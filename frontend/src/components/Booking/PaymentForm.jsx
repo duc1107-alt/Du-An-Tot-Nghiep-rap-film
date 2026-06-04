@@ -25,7 +25,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
       err.expiry = 'Sử dụng định dạng MM/YY';
     }
     if (!/^\d{3}$/.test(cardData.cvv)) {
-      err.cvv = 'CVV không hợp lệ (3 chữ số)';
+      err.cvv = 'CVV không hợp lệ (yêu cầu 3 chữ số)';
     }
 
     setErrors(err);
@@ -49,7 +49,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
     <div className="bg-dark-card border border-dark-border p-6 rounded-3xl space-y-6 shadow-xl">
       <div>
         <h3 className="text-lg font-black text-zinc-200 border-b border-dark-border pb-3">
-          Chọn Phương Thức Thanh Toán
+          Chọn phương thức thanh toán
         </h3>
       </div>
 
@@ -65,7 +65,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           }`}
         >
           <CreditCard size={20} className="mb-2" />
-          <span>Thẻ Tín Dụng</span>
+          <span>Thanh toán thẻ</span>
         </button>
         
         <button
@@ -100,7 +100,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
         <form onSubmit={handlePay} className="space-y-4 pt-2">
           <Input
             name="holder"
-            label="Tên Chủ Thẻ"
+            label="Tên chủ thẻ"
             placeholder="NGUYEN VAN A"
             value={cardData.holder}
             onChange={handleCardChange}
@@ -110,7 +110,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
 
           <Input
             name="number"
-            label="Số Thẻ"
+            label="Số thẻ"
             placeholder="1234 5678 1234 5678"
             maxLength={19}
             value={cardData.number}
@@ -122,7 +122,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
           <div className="grid grid-cols-2 gap-4">
             <Input
               name="expiry"
-              label="Ngày Hết Hạn"
+              label="Ngày hết hạn"
               placeholder="MM/YY"
               maxLength={5}
               value={cardData.expiry}
@@ -133,7 +133,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             <Input
               name="cvv"
               type="password"
-              label="Mã CVV"
+              label="Mã bảo mật CVV"
               placeholder="•••"
               maxLength={3}
               value={cardData.cvv}
@@ -147,9 +147,9 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             type="submit"
             variant="primary"
             loading={loading}
-            className="w-full mt-4 py-3"
+            className="w-full mt-4 py-3.5 rounded-2xl font-black text-sm"
           >
-            Xác Nhận & Thanh Toán {pricing.grandTotal.toLocaleString()} VNĐ
+            Xác nhận & Thanh toán {pricing.grandTotal.toLocaleString()} VND
           </Button>
         </form>
       )}
@@ -165,7 +165,7 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
               </div>
             </div>
             <p className="text-xs text-zinc-400 font-semibold leading-relaxed">
-              Quét mã QR này bằng ứng dụng <span className="capitalize font-black text-white">{method}</span> của bạn để hoàn tất thanh toán.
+              Quét mã QR này bằng ứng dụng <span className="capitalize font-black text-white">{method}</span> của bạn để thanh toán.
             </p>
           </div>
 
@@ -173,9 +173,9 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             onClick={handlePay}
             variant="primary"
             loading={loading}
-            className="w-full py-3"
+            className="w-full py-3.5 rounded-2xl font-black text-sm"
           >
-            Tôi đã thanh toán
+            Tôi đã hoàn tất thanh toán
           </Button>
         </div>
       )}

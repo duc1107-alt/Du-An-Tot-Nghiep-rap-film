@@ -106,7 +106,7 @@ export const BookingPage = () => {
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b border-dark-border pb-3">
                 <Armchair className="text-brand" size={20} />
-                <h3 className="text-lg font-black text-zinc-200">Chọn vị trí ghế</h3>
+                <h3 className="text-lg font-black text-zinc-200">Chọn vị trí ghế ngồi</h3>
               </div>
 
               <SeatMap

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ticket, Popcorn, CreditCard } from 'lucide-react';
+import { Ticket, Popcorn, ChevronRight, X } from 'lucide-react';
 import Button from '../common/Button';
 
 export const BookingSummary = ({
@@ -12,6 +12,7 @@ export const BookingSummary = ({
   proceedText = 'Tiến hành thanh toán',
   disabled = false,
   loading = false,
+  onRemoveConcession, // optional callback to clear concession
 }) => {
   if (!showtime) return null;
 
@@ -19,21 +20,22 @@ export const BookingSummary = ({
   const theater = showtime.theater || {};
   const room = showtime.room || {};
 
-  const timeString = new Date(showtime.startTime).toLocaleTimeString('vi-VN', {
+  const timeString = new Date(showtime.startTime).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   });
 
-  const dateString = new Date(showtime.startTime).toLocaleDateString('vi-VN', {
+  const dateString = new Date(showtime.startTime).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
+    month: 'numeric',
   });
 
   return (
     <div className="bg-dark-card border border-dark-border p-6 rounded-3xl space-y-6 shadow-xl sticky top-24">
-      {/* Hóa đơn chi tiết phim */}
+      {/* Movie Details Invoice Header */}
       <div className="space-y-2 border-b border-dark-border pb-4">
         <span className="text-[10px] font-black bg-brand px-2 py-0.5 rounded text-white tracking-wide uppercase">
           {movie.rating}
@@ -49,7 +51,7 @@ export const BookingSummary = ({
 
       {/* Chi tiết đơn giá */}
       <div className="space-y-4 text-xs font-semibold">
-        {/* Vé / Ghế */}
+        {/* Ticket Seats */}
         {selectedSeats.length > 0 ? (
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 text-zinc-300">
@@ -58,11 +60,11 @@ export const BookingSummary = ({
             </div>
             <div className="flex justify-between pl-5 text-zinc-500">
               <span>{selectedSeats.length} Vé</span>
-              <span className="text-zinc-300 font-bold">{pricing.seatsTotal.toLocaleString('vi-VN')} VNĐ</span>
+              <span className="text-zinc-300 font-bold">{pricing.seatsTotal.toLocaleString()} VND</span>
             </div>
           </div>
         ) : (
-          <p className="text-zinc-500 italic">Chưa có ghế nào được chọn.</p>
+          <p className="text-zinc-500 italic">Chưa chọn ghế nào.</p>
         )}
 
         {/* Bắp nước */}
@@ -70,25 +72,25 @@ export const BookingSummary = ({
           <div className="space-y-1.5 border-t border-zinc-900 pt-3">
             <div className="flex items-center gap-1.5 text-zinc-300">
               <Popcorn size={14} className="text-brand" />
-              <span>Bắp nước đã chọn</span>
+              <span>Đồ ăn uống đã chọn</span>
             </div>
             <div className="space-y-1 pl-5">
               {Object.keys(selectedConcessions).map((id) => {
                 const qty = selectedConcessions[id];
                 const item = concessionsList.find((c) => c._id === id);
-                if (!item) return null;
+                if (!item || qty === 0) return null;
                 return (
                   <div key={id} className="flex justify-between text-zinc-500">
                     <span>
                       {item.name} x {qty}
                     </span>
-                    <span className="text-zinc-400">{(item.price * qty).toLocaleString('vi-VN')} VNĐ</span>
+                    <span className="text-zinc-400">{(item.price * qty).toLocaleString()} VND</span>
                   </div>
                 );
               })}
               <div className="flex justify-between pl-0 pt-1 text-zinc-500 border-t border-zinc-900/40">
-                <span>Tổng tiền bắp nước</span>
-                <span className="text-zinc-300 font-bold">{pricing.concessionsTotal.toLocaleString('vi-VN')} VNĐ</span>
+                <span>Tổng cộng đồ ăn uống</span>
+                <span className="text-zinc-300 font-bold">{pricing.concessionsTotal.toLocaleString()} VND</span>
               </div>
             </div>
           </div>
@@ -97,9 +99,9 @@ export const BookingSummary = ({
 
       {/* Tổng cộng */}
       <div className="border-t-2 border-dashed border-dark-border pt-4 flex items-center justify-between">
-        <span className="text-sm font-black text-zinc-300">Số tiền thanh toán</span>
+        <span className="text-sm font-black text-zinc-300">Tổng tiền thanh toán</span>
         <span className="text-xl font-black text-brand tracking-tight">
-          {pricing.grandTotal.toLocaleString('vi-VN')} VNĐ
+          {pricing.grandTotal.toLocaleString()} VND
         </span>
       </div>
 
@@ -110,8 +112,8 @@ export const BookingSummary = ({
           disabled={disabled || selectedSeats.length === 0}
           loading={loading}
           variant="primary"
-          className="w-full py-3"
-          icon={<CreditCard size={18} />}
+          className="w-full py-3.5 rounded-2xl font-black text-sm"
+          icon={<ChevronRight size={18} />}
         >
           {proceedText}
         </Button>

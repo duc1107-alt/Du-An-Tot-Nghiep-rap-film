@@ -33,11 +33,20 @@ export const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
           <Link to="/" className={`${isActive('/')} transition-colors`}>
-            Trang chủ
+            Home
           </Link>
           <Link to="/movies" className={`${isActive('/movies')} transition-colors`}>
             Phim
           </Link>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Khuyến mãi
+          </a>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Rạp
+          </a>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Về chúng tôi
+          </a>
           {isAuthenticated && (
             <Link to="/history" className={`${isActive('/history')} flex items-center gap-1.5 transition-colors`}>
               <History size={16} /> Vé của tôi
@@ -85,12 +94,20 @@ export const Header = () => {
               </Link>
               <Link
                 to="/register"
-                className="bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(229,9,20,0.3)] transition-all transform active:scale-95"
+                className="hidden sm:inline-block text-zinc-300 hover:text-white text-sm font-semibold px-4 py-2 transition-colors"
               >
                 Đăng ký
               </Link>
             </div>
           )}
+
+          {/* Quick Book Ticket Button from mockup */}
+          <Link
+            to="/movies"
+            className="bg-brand hover:bg-brand-dark text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-[0_4px_12px_rgba(168,85,247,0.3)] transition-all transform active:scale-95 uppercase tracking-wider"
+          >
+            Đặt vé
+          </Link>
         </div>
       </div>
     </header>

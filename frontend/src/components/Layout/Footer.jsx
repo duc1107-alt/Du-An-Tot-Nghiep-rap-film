@@ -1,5 +1,7 @@
 import React from 'react';
-import { Film, Github, Shield, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Github, Shield, MapPin, Phone } from 'lucide-react';
+import myLogo from '../../assets/images/logo.png';
 
 export const Footer = () => {
   return (
@@ -7,14 +9,13 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Left branding */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="bg-brand p-1.5 rounded-lg">
-              <Film className="text-white" size={16} />
-            </div>
-            <span className="text-lg font-black text-white tracking-wider uppercase">
-              Nova <span className="text-brand">Cinematic</span>
-            </span>
-          </div>
+          <Link to="/" className="flex items-center group w-max">
+            <img 
+              src={myLogo} 
+              alt="Nova Cinematic Logo" 
+              className="h-16 w-auto object-contain group-hover:scale-105 transition-transform" 
+            />
+          </Link>
           <p className="text-xs leading-relaxed text-zinc-500">
             Tận hưởng trải nghiệm đặt vé xem phim tuyệt vời. Lựa chọn ghế ngồi ưng ý, đồ ăn vặt hấp dẫn và thanh toán an toàn chỉ với vài cú nhấp chuột.
           </p>
