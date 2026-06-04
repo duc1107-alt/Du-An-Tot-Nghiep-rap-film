@@ -62,7 +62,7 @@ export const HomePage = () => {
               <Link to={`/movies/${featured._id}`}>
                 <Button 
                   variant="primary" 
-                  className="py-2.5 px-5 font-bold text-sm bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white rounded-xl flex items-center gap-2 border border-red-600/40 shadow-lg shadow-red-900/20 active:scale-95 transition-all"
+                  className="py-2.5 px-5 font-bold text-sm bg-gradient-to-r from-brand-dark to-brand hover:from-brand hover:to-brand-light text-white rounded-xl flex items-center gap-2 border border-brand/40 shadow-lg shadow-brand/20 active:scale-95 transition-all"
                 >
                 
                   <svg 
