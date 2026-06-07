@@ -10,9 +10,9 @@ export const RoomManager = () => {
   const [theaters, setTheaters] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('rooms'); // 'rooms' or 'theaters'
+  const [activeTab, setActiveTab] = useState('rooms'); // 'rooms' hoặc 'theaters'
   
-  // Modals status
+  // Trạng thái của các Modal
   const [isThOpen, setIsThOpen] = useState(false);
   const [isRmOpen, setIsRmOpen] = useState(false);
 
@@ -21,7 +21,7 @@ export const RoomManager = () => {
   const [editingRoom, setEditingRoom] = useState(null);
 
   // Forms states
-  const [thForm, setThForm] = useState({ name: '', address: '', city: 'Ho Chi Minh', phone: '' });
+  const [thForm, setThForm] = useState({ name: '', address: '', city: 'Hồ Chí Minh', phone: '' });
   const [rmForm, setRmForm] = useState({
     name: '',
     theaterId: '',
@@ -124,7 +124,7 @@ export const RoomManager = () => {
         await adminService.createTheater(thForm);
       }
       setIsThOpen(false);
-      setThForm({ name: '', address: '', city: 'Ho Chi Minh', phone: '' });
+      setThForm({ name: '', address: '', city: 'Hồ Chí Minh', phone: '' });
       setEditingTheater(null);
       loadData();
     } catch (err) {
@@ -203,8 +203,8 @@ export const RoomManager = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-dark-border pb-4 gap-4">
         <div>
-          <h3 className="text-lg font-black text-zinc-200">Theaters & Halls</h3>
-          <p className="text-xs text-zinc-500 mt-1">Configure cinema complexes and generate physical seating charts.</p>
+          <h3 className="text-lg font-black text-zinc-200">Rạp & Phòng Chiếu</h3>
+          <p className="text-xs text-zinc-500 mt-1">Cấu hình cụm rạp và tạo sơ đồ ghế ngồi vật lý.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -225,7 +225,7 @@ export const RoomManager = () => {
             activeTab === 'rooms' ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          Seated Halls ({rooms.length})
+          Phòng Chiếu ({rooms.length})
         </button>
         <button
           onClick={() => setActiveTab('theaters')}
@@ -233,11 +233,11 @@ export const RoomManager = () => {
             activeTab === 'theaters' ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          Theater Complexes ({theaters.length})
+          Cụm Rạp ({theaters.length})
         </button>
       </div>
 
-      {/* Halls Grid listing */}
+      {/* Danh sách lưới Phòng chiếu */}
       {activeTab === 'rooms' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {rooms.length === 0 ? (
@@ -286,7 +286,7 @@ export const RoomManager = () => {
         </div>
       )}
 
-      {/* Theater listing */}
+      {/* Danh sách Cụm rạp */}
       {activeTab === 'theaters' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {theaters.length === 0 ? (
@@ -335,17 +335,17 @@ export const RoomManager = () => {
             </div>
           )}
 
-          <Input name="name" label="Complex Name" placeholder="Nova Cinema Landmark 81" value={thForm.name} onChange={handleThChange} required />
-          <Input name="address" label="Street Address" placeholder="Landmark 81, B1 Floor" value={thForm.address} onChange={handleThChange} required />
+          <Input name="name" label="Tên Cụm Rạp" placeholder="Nova Cinema Landmark 81" value={thForm.name} onChange={handleThChange} required />
+          <Input name="address" label="Địa Chỉ" placeholder="Tầng B1, Landmark 81" value={thForm.address} onChange={handleThChange} required />
 
           <div className="grid grid-cols-2 gap-4">
-            <Input name="city" label="City" value={thForm.city} onChange={handleThChange} required />
-            <Input name="phone" label="Phone Hotline" placeholder="028 3822 3111" value={thForm.phone} onChange={handleThChange} required />
+            <Input name="city" label="Thành Phố" value={thForm.city} onChange={handleThChange} required />
+            <Input name="phone" label="Hotline" placeholder="028 3822 3111" value={thForm.phone} onChange={handleThChange} required />
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-dark-border">
             <Button onClick={() => setIsThOpen(false)} variant="secondary" className="px-5 py-2">
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" variant="primary" className="px-6 py-2">
               {editingTheater ? "Save" : "Register"}
@@ -365,11 +365,11 @@ export const RoomManager = () => {
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <Input name="name" label="Hall Name" placeholder="Hall 1 (IMAX)" value={rmForm.name} onChange={handleRmChange} required />
+            <Input name="name" label="Tên Phòng Chiếu" placeholder="Phòng 1 (IMAX)" value={rmForm.name} onChange={handleRmChange} required />
             
-            {/* Theater Select */}
+            {/* Lựa chọn Cụm rạp */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">Theater Complex</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">Cụm Rạp</label>
               <select
                 name="theaterId"
                 value={rmForm.theaterId}
@@ -388,9 +388,9 @@ export const RoomManager = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Projection Format */}
+            {/* Định dạng chiếu */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">Projection Format</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">Định Dạng Chiếu</label>
               <select
                 name="type"
                 value={rmForm.type}
@@ -431,7 +431,7 @@ export const RoomManager = () => {
 
           <div className="flex justify-end gap-3 pt-3 border-t border-dark-border">
             <Button onClick={() => setIsRmOpen(false)} variant="secondary" className="px-5 py-2">
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" variant="primary" className="px-6 py-2">
               {editingRoom ? "Save" : "Save & Generate Chart"}

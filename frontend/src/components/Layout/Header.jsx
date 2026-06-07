@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Film, User, LogOut, LayoutDashboard, History } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
+import myLogo from '../../assets/images/logo.png';
 
 export const Header = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -21,14 +22,13 @@ export const Header = () => {
     <header className="sticky top-0 z-40 w-full bg-dark-deep/80 backdrop-blur-md border-b border-dark-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 group">
-          <div className="bg-brand p-1.5 rounded-lg shadow-[0_0_15px_rgba(229,9,20,0.5)] group-hover:scale-105 transition-transform">
-            <Film className="text-white" size={20} />
-          </div>
-          <span className="text-xl font-black text-white tracking-wider uppercase">
-            Nova <span className="text-brand">Cinematic</span>
-          </span>
-        </Link>
+        <Link to="/" className="flex items-center group">
+        <img 
+          src={myLogo} 
+          alt="Nova Cinematic Logo" 
+          className="h-16 w-auto object-contain group-hover:scale-105 transition-transform" 
+        />
+      </Link>
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold">
@@ -36,11 +36,20 @@ export const Header = () => {
             Home
           </Link>
           <Link to="/movies" className={`${isActive('/movies')} transition-colors`}>
-            Movies
+            Phim
           </Link>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Khuyến mãi
+          </a>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Rạp
+          </a>
+          <a href="#" className="text-zinc-300 hover:text-white transition-colors">
+            Về chúng tôi
+          </a>
           {isAuthenticated && (
             <Link to="/history" className={`${isActive('/history')} flex items-center gap-1.5 transition-colors`}>
-              <History size={16} /> My Tickets
+              <History size={16} /> Vé của tôi
             </Link>
           )}
         </nav>
@@ -55,7 +64,7 @@ export const Header = () => {
                   className="hidden sm:flex items-center space-x-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-all duration-300"
                 >
                   <LayoutDashboard size={14} />
-                  <span>Admin Panel</span>
+                  <span>Quản trị</span>
                 </Link>
               )}
               
@@ -70,7 +79,7 @@ export const Header = () => {
               <button
                 onClick={handleLogout}
                 className="text-zinc-400 hover:text-brand transition-colors p-2 rounded-lg hover:bg-zinc-900"
-                title="Log Out"
+                title="Đăng xuất"
               >
                 <LogOut size={18} />
               </button>
@@ -81,16 +90,24 @@ export const Header = () => {
                 to="/login"
                 className="text-zinc-300 hover:text-white text-sm font-semibold px-4 py-2 transition-colors"
               >
-                Sign In
+                Đăng nhập
               </Link>
               <Link
                 to="/register"
-                className="bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(229,9,20,0.3)] transition-all transform active:scale-95"
+                className="hidden sm:inline-block text-zinc-300 hover:text-white text-sm font-semibold px-4 py-2 transition-colors"
               >
-                Register
+                Đăng ký
               </Link>
             </div>
           )}
+
+          {/* Quick Book Ticket Button from mockup */}
+          <Link
+            to="/movies"
+            className="bg-brand hover:bg-brand-dark text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-[0_4px_12px_rgba(168,85,247,0.3)] transition-all transform active:scale-95 uppercase tracking-wider"
+          >
+            Đặt vé
+          </Link>
         </div>
       </div>
     </header>
