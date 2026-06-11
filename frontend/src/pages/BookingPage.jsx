@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, Popcorn, Armchair } from 'lucide-react';
 import bookingService from '../services/booking.service';
-import adminService from '../services/admin.service';
 import useBooking from '../hooks/useBooking';
 import useAuth from '../hooks/useAuth';
 import SeatMap from '../components/Booking/SeatMap';
@@ -47,7 +46,7 @@ export const BookingPage = () => {
 
         // 2. Lấy danh sách bắp nước tương ứng với rạp chiếu
         const theaterId = stResult.showtime.theater?._id || stResult.showtime.theater;
-        const conResult = await adminService.getConcessions(theaterId);
+        const conResult = await bookingService.getConcessions(theaterId);
         setConcessionsList(conResult);
       } catch (err) {
         console.error(err);

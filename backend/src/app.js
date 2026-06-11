@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes');
 const movieRoutes = require('./routes/movie.routes');
 const showtimeRoutes = require('./routes/showtime.routes');
 const bookingRoutes = require('./routes/booking.routes');
+const concessionRoutes = require('./routes/concession.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 // Connect to MongoDB
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/showtimes', showtimeRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/concessions', concessionRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Base route status check

@@ -26,6 +26,9 @@ const {
   getRevenueReport,
   listBookings,
   deleteBooking,
+  listUsers,
+  updateUserRole,
+  deleteUser,
 } = require('../controllers/admin.controller');
 const { protect, admin } = require('../middleware/auth.middleware');
 
@@ -81,5 +84,10 @@ router.get('/dashboard/revenue', getRevenueReport);
 // Booking Management
 router.get('/bookings', listBookings);
 router.delete('/bookings/:id', deleteBooking);
+
+// User Management
+router.get('/users', listUsers);
+router.put('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 module.exports = router;

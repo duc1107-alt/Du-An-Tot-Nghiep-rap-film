@@ -560,6 +560,94 @@ const bulkUpdateSeats = async (req, res, next) => {
   }
 };
 
+// ==========================================
+// 6. Quản lý Người dùng (User Management)
+// ==========================================
+
+// CHỨC NĂNG: Lấy danh sách toàn bộ người dùng (ẩn mật khẩu)
+const listUsers = async (req, res, next) => {
+  try {
+    const query = {};
+    if (req.query.role) {
+      query.role = req.query.role;
+    }
+    const users = await User.find(query)
+      .select('-password') // Không trả về mật khẩu
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// CHỨC NĂNG: Cập nhật role của một người dùng (user <-> admin)
+const updateUserRole = async (req, res, next) => {
+  try {
+    const { role } = req.body;
+
+    if (!['user', 'admin'].includes(role)) {
+      res.status(400);
+      throw new Error('Role không hợp lệ. Chỉ chấp nhận: user, admin');
+    }
+
+    // Không cho phép admin tự hạ quyền chính mình
+    if (req.params.id === req.user._id.toString()) {
+      res.status(400);
+      throw new Error('Không thể tự thay đổi quyền của chính bạn');
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      res.status(404);
+      throw new Error('Không tìm thấy người dùng');
+    }
+
+    res.json({ success: true, data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// CHỨC NĂNG: Xóa một người dùng (không cho xóa tài khoản admin)
+const deleteUser = async (req, res, next) => {
+  try {
+    // Không cho phép admin tự xóa chính mình
+    if (req.params.id === req.user._id.toString()) {
+      res.status(400);
+      throw new Error('Không thể tự xóa tài khoản của chính bạn');
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(404);
+      throw new Error('Không tìm thấy người dùng');
+    }
+
+    // Xóa toàn bộ lịch sử đặt vé của người dùng này
+    const userBookings = await Booking.find({ user: user._id });
+    for (const booking of userBookings) {
+      // Giải phóng ghế trong các suất chiếu
+      if (booking.seats && booking.seats.length > 0 && booking.showtime) {
+        await Showtime.findByIdAndUpdate(booking.showtime, {
+          $pull: { bookedSeats: { $in: booking.seats } },
+        });
+      }
+    }
+    await Booking.deleteMany({ user: user._id });
+
+    await user.deleteOne();
+    res.json({ success: true, message: `Đã xóa người dùng ${user.username} thành công` });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createMovie,
   updateMovie,
@@ -586,4 +674,7 @@ module.exports = {
   getRevenueReport,
   listBookings,
   deleteBooking,
+  listUsers,
+  updateUserRole,
+  deleteUser,
 };

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Film, Calendar, Building2, Coffee,
   Ticket, BarChart3, LogOut, Menu, ChevronRight,
-  Clapperboard, Zap, Bell, ChevronDown, Activity
+  Clapperboard, Zap, Bell, ChevronDown, Activity, Users
 } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 
@@ -28,6 +28,12 @@ const NAV_ITEMS = [
     items: [
       { key: 'bookings', label: 'Đặt vé',           icon: Ticket },
       { key: 'revenue',  label: 'Báo cáo doanh thu', icon: BarChart3 },
+    ]
+  },
+  {
+    group: 'Hệ thống',
+    items: [
+      { key: 'users', label: 'Người dùng', icon: Users },
     ]
   },
 ];

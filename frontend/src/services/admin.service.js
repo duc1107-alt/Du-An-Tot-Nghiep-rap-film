@@ -134,6 +134,24 @@ const deleteBooking = async (id) => {
   return response.data;
 };
 
+// User Management
+const getUsers = async (role = '') => {
+  const response = await api.get('/admin/users', {
+    params: role ? { role } : {},
+  });
+  return response.data;
+};
+
+const updateUserRole = async (id, role) => {
+  const response = await api.put(`/admin/users/${id}/role`, { role });
+  return response.data;
+};
+
+const deleteUser = async (id) => {
+  const response = await api.delete(`/admin/users/${id}`);
+  return response.data;
+};
+
 const adminService = {
   createMovie,
   updateMovie,
@@ -160,6 +178,9 @@ const adminService = {
   getRevenueReport,
   getBookings,
   deleteBooking,
+  getUsers,
+  updateUserRole,
+  deleteUser,
 };
 
 export default adminService;

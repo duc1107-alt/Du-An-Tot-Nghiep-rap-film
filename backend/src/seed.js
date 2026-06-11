@@ -474,7 +474,7 @@ const seedData = async () => {
 
     // ── 8. Concessions ────────────────────────────────────────────────────────
     console.log('\n🍿 Creating Concessions...');
-    const concessions = await Concession.insertMany([
+    const concessionTemplates = [
       // Food
       {
         name: 'Bắp rang bơ size L',
@@ -574,7 +574,19 @@ const seedData = async () => {
         type: 'combo',
         active: true,
       },
-    ]);
+    ];
+
+    const concessionsData = [];
+    for (const theater of theaters) {
+      for (const item of concessionTemplates) {
+        concessionsData.push({
+          ...item,
+          theater: theater._id,
+        });
+      }
+    }
+
+    const concessions = await Concession.insertMany(concessionsData);
     console.log(`   ✔ Created ${concessions.length} concession items`);
 
     // ── 9. Bookings, Payments ─────────────────────────────────────────────────
@@ -612,18 +624,26 @@ const seedData = async () => {
 
       const seatTotal = showtime.ticketPrice * numSeats;
       const hasConcession = i % 3 === 0;
-      const concessionItems = hasConcession
+
+      // Lấy danh sách concession thuộc rạp của showtime này
+      const theaterConcessions = concessions.filter(
+        (c) => c.theater.toString() === showtime.theater.toString()
+      );
+
+      const concessionItems = hasConcession && theaterConcessions.length > 0
         ? [
             {
-              concession: concessions[i % concessions.length]._id,
+              concession: theaterConcessions[i % theaterConcessions.length]._id,
               quantity: randomBetween(1, 2),
             },
           ]
         : [];
-      const concessionTotal = hasConcession
-        ? concessions[i % concessions.length].price *
+
+      const concessionTotal = hasConcession && theaterConcessions.length > 0
+        ? theaterConcessions[i % theaterConcessions.length].price *
           concessionItems[0].quantity
         : 0;
+
       const totalPrice = seatTotal + concessionTotal;
 
       const status = bookingStatuses[i % bookingStatuses.length];
