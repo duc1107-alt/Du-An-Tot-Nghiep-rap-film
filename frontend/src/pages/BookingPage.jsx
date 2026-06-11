@@ -47,6 +47,8 @@ export const BookingPage = () => {
         // 2. Lấy danh sách bắp nước tương ứng với rạp chiếu
         const theaterId = stResult.showtime.theater?._id || stResult.showtime.theater;
         const conResult = await bookingService.getConcessions(theaterId);
+        const concessionArray = Array.isArray(conResult) ? conResult : (conResult?.data || []);
+        setConcessionsList(concessionArray);
         setConcessionsList(conResult);
       } catch (err) {
         console.error(err);
@@ -59,7 +61,7 @@ export const BookingPage = () => {
 
   if (loading) return <Loading fullPage />;
 
-  const pricing = calculateTotal(concessionsList);
+  const pricing = calculateTotal(concessionsList, seatsList);
 
   const handleProceed = () => {
     if (activeStep === 1) {
