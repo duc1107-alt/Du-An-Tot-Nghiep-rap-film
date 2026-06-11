@@ -58,6 +58,7 @@ export const MovieDetail = ({ movie }) => {
   const [showtimes, setShowtimes] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [loadingShowtimes, setLoadingShowtimes] = useState(false);
+  const [trailerError, setTrailerError] = useState(false);
 
   // ── Lấy title / description / language theo ngôn ngữ trực tiếp từ DB ──────
   // Nếu phim có titleEN/descriptionEN thì dùng, không thì fallback về bản gốc.
@@ -198,7 +199,7 @@ export const MovieDetail = ({ movie }) => {
       </div>
 
       {/* 2. Trình phát video Youtube Trailer */}
-      {movie.trailerUrl && (
+      {movie.trailerUrl && movie.trailerUrl.trim() && (
         <div className="space-y-6 pt-6">
           <div className="flex items-center justify-between border-b border-dark-border/50 pb-4">
             <h2 className="text-2xl md:text-3xl font-black text-white flex items-center gap-3">
