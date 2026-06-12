@@ -4,6 +4,7 @@ import { Film, User, Clock, Calendar, Ticket, ChevronRight, Play } from 'lucide-
 import bookingService from '../../services/booking.service';
 import Button from '../common/Button';
 import { useLanguage } from '../../context/LanguageContext';
+import ReviewSection from './ReviewSection';
 
 // Helper function to convert any YouTube link into a secure, embeddable URL
 const getEmbedUrl = (url) => {
@@ -310,6 +311,9 @@ export const MovieDetail = ({ movie }) => {
           )}
         </div>
       )}
+
+      {/* 4. Khu vực đánh giá / bình luận phim */}
+      <ReviewSection movieId={movie._id} />
     </div>
   );
 };
