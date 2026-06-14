@@ -12,8 +12,12 @@ const {
   updateRoom,
   deleteRoom,
   listRooms,
+  getRoomSeats,
+  updateSeat,
+  bulkUpdateSeats,
   createConcession,
   updateConcession,
+  deleteConcession,
   listConcessions,
   createShowtime,
   updateShowtime,
@@ -50,5 +54,14 @@ router.route("/showtimes/:id").put(updateShowtime).delete(deleteShowtime);
 // Dashboard & Analytics
 router.get("/dashboard/stats", getDashboardStats);
 router.get("/dashboard/revenue", getRevenueReport);
+
+// Booking Management
+router.get('/bookings', listBookings);
+router.delete('/bookings/:id', deleteBooking);
+
+// User Management
+router.get('/users', listUsers);
+router.put('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 module.exports = router;
