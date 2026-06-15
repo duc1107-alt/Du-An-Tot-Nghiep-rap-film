@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Clock, Copy, AlertTriangle, RefreshCw } from 'lucide-react';
 import useBooking from '../hooks/useBooking';
 import bookingService from '../services/booking.service';
+import paymentService from '../services/payment.service';
 import PaymentForm from '../components/Booking/PaymentForm';
 import BookingSummary from '../components/Booking/BookingSummary';
 import BookingSuccessModal from '../components/Booking/BookingSuccessModal';
@@ -26,6 +27,8 @@ export const PaymentPage = () => {
   // Trạng thái VietQR
   const [showQRScreen, setShowQRScreen] = useState(false);
   const [qrData, setQrData] = useState(null);
+  const [showMomoScreen, setShowMomoScreen] = useState(false);
+  const [momoData, setMomoData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 phút (300 giây)
   const [bookingId, setBookingId] = useState(null);
 
@@ -70,7 +73,8 @@ export const PaymentPage = () => {
     let timerId;
     let pollId;
 
-    if (showQRScreen && bookingId) {
+    const isWaitingPayment = (showQRScreen || showMomoScreen) && bookingId;
+    if (isWaitingPayment) {
       // 1. Đồng hồ đếm ngược 5 phút
       timerId = setInterval(() => {
         setTimeLeft((prev) => {
@@ -103,7 +107,7 @@ export const PaymentPage = () => {
       if (timerId) clearInterval(timerId);
       if (pollId) clearInterval(pollId);
     };
-  }, [showQRScreen, bookingId]);
+  }, [showQRScreen, showMomoScreen, bookingId]);
 
   const pricing = calculateTotal(concessionsList);
 
@@ -115,11 +119,25 @@ export const PaymentPage = () => {
       setSnapshotSeats([...selectedSeats]);
 
       const result = await submitBooking(paymentMethod);
+      const bookingIdFromResult = result.data.booking._id;
+      setBookingId(bookingIdFromResult);
 
       if (paymentMethod === 'vietqr') {
-        setBookingId(result.data.booking._id);
         setQrData(result.data.vietqr);
         setShowQRScreen(true);
+        setTimeLeft(300);
+      } else if (paymentMethod === 'momo') {
+        const momoResult = await paymentService.createMomoPayment({
+          bookingId: bookingIdFromResult,
+          amount: result.data.booking.totalPrice,
+          orderInfo: `Booking ${bookingIdFromResult}`,
+        });
+
+        setMomoData({
+          payUrl: momoResult.payUrl,
+          payload: momoResult.raw,
+        });
+        setShowMomoScreen(true);
         setTimeLeft(300);
       } else {
         // Xóa trạng thái đặt vé trong Redux
@@ -142,8 +160,9 @@ export const PaymentPage = () => {
       // Xóa Redux booking state
       clearBooking();
       
-      // Ẩn màn hình QR
+      // Ẩn màn hình QR / Momo
       setShowQRScreen(false);
+      setShowMomoScreen(false);
       
       // Mở modal thành công
       setSuccessModal({ open: true, bookingResult: detailRes });
@@ -152,6 +171,7 @@ export const PaymentPage = () => {
       // Fallback
       clearBooking();
       setShowQRScreen(false);
+      setShowMomoScreen(false);
       setSuccessModal({ open: true, bookingResult: { data: { booking: { _id: bookingId } } } });
     }
   };
@@ -164,8 +184,10 @@ export const PaymentPage = () => {
     try {
       await bookingService.cancelBooking(bookingId);
       setShowQRScreen(false);
+      setShowMomoScreen(false);
       setBookingId(null);
       setQrData(null);
+      setMomoData(null);
       if (isManual) {
         navigate(-1);
       } else {
@@ -202,10 +224,16 @@ export const PaymentPage = () => {
   };
 
   // Render màn hình thanh toán VietQR
-  if (showQRScreen && qrData) {
+  const isMomoScreen = showMomoScreen && momoData;
+  if ((showQRScreen && qrData) || isMomoScreen) {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    const title = isMomoScreen ? 'Thanh Toán MoMo' : 'Thanh Toán Chuyển Khoản VietQR';
+    const description = isMomoScreen
+      ? 'Quét mã QR này bằng ứng dụng MoMo để hoàn tất giao dịch, hoặc nhấn vào nút mở liên kết MoMo.'
+      : 'Hãy mở ứng dụng ngân hàng và quét mã để tiến hành đặt vé tự động.';
 
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -216,10 +244,10 @@ export const PaymentPage = () => {
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-emerald-400 flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping inline-block shrink-0" />
-                Thanh Toán Chuyển Khoản VietQR
+                {title}
               </h2>
               <p className="text-xs text-zinc-500 mt-1">
-                Hãy mở ứng dụng ngân hàng và quét mã để tiến hành đặt vé tự động.
+                {description}
               </p>
             </div>
             
@@ -236,11 +264,21 @@ export const PaymentPage = () => {
             {/* Cột trái: Mã QR Code */}
             <div className="flex flex-col items-center space-y-4">
               <div className="bg-white p-4 rounded-3xl flex justify-center items-center shadow-lg border border-zinc-200 w-64 h-64 relative group">
-                <img
-                  src={qrData.qrUrl}
-                  alt="VietQR Code"
-                  className="w-full h-full object-contain"
-                />
+                {isMomoScreen ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(momoData.payUrl)}`}
+                      alt="MoMo QR Code"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={qrData.qrUrl}
+                    alt="VietQR Code"
+                    className="w-full h-full object-contain"
+                  />
+                )}
               </div>
 
               {/* Status loader */}
@@ -250,75 +288,103 @@ export const PaymentPage = () => {
               </div>
             </div>
 
-            {/* Cột phải: Thông tin chuyển khoản chi tiết */}
+            {/* Cột phải: Thông tin thanh toán */}
             <div className="space-y-4">
-              <h3 className="text-sm font-extrabold text-zinc-300 uppercase tracking-wider pl-1">Thông tin chuyển khoản</h3>
-              
-              <div className="bg-zinc-950 border border-dark-border rounded-2xl p-4 divide-y divide-zinc-900 text-sm">
-                <div className="flex justify-between py-3">
-                  <span className="text-zinc-500 font-semibold">Ngân hàng nhận</span>
-                  <span className="text-zinc-200 font-bold">{qrData.bankId}</span>
-                </div>
-                
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-zinc-500 font-semibold">Số tài khoản</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-zinc-200 font-bold font-mono text-base">{qrData.accountNo}</span>
-                    <button
-                      onClick={() => copyToClipboard(qrData.accountNo, 'Số tài khoản')}
-                      className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
-                      title="Sao chép"
-                    >
-                      <Copy size={14} />
-                    </button>
+              <h3 className="text-sm font-extrabold text-zinc-300 uppercase tracking-wider pl-1">
+                {isMomoScreen ? 'Thông tin thanh toán MoMo' : 'Thông tin chuyển khoản'}
+              </h3>
+
+              {isMomoScreen ? (
+                <div className="bg-zinc-950 border border-dark-border rounded-2xl p-4 space-y-4 text-sm">
+                  <div className="text-zinc-400 text-sm leading-relaxed">
+                    Mở ứng dụng MoMo và quét mã QR bên trái hoặc nhấn nút "Mở liên kết MoMo" phía dưới để hoàn tất thanh toán.
+                  </div>
+
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
+                    <div className="flex justify-between gap-2 text-zinc-500">
+                      <span className="font-semibold">Liên kết thanh toán</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(momoData.payUrl);
+                          alert('Đã sao chép liên kết MoMo!');
+                        }}
+                        className="text-emerald-400 hover:text-emerald-200 text-xs"
+                      >
+                        Sao chép
+                      </button>
+                    </div>
+                    <div className="break-all text-zinc-200 text-xs">{momoData.payUrl}</div>
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="bg-zinc-950 border border-dark-border rounded-2xl p-4 divide-y divide-zinc-900 text-sm">
+                    <div className="flex justify-between py-3">
+                      <span className="text-zinc-500 font-semibold">Ngân hàng nhận</span>
+                      <span className="text-zinc-200 font-bold">{qrData.bankId}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-zinc-500 font-semibold">Số tài khoản</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-zinc-200 font-bold font-mono text-base">{qrData.accountNo}</span>
+                        <button
+                          onClick={() => copyToClipboard(qrData.accountNo, 'Số tài khoản')}
+                          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                          title="Sao chép"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                    </div>
 
-                <div className="flex justify-between py-3">
-                  <span className="text-zinc-500 font-semibold">Chủ tài khoản</span>
-                  <span className="text-zinc-200 font-bold uppercase">{qrData.accountName}</span>
-                </div>
+                    <div className="flex justify-between py-3">
+                      <span className="text-zinc-500 font-semibold">Chủ tài khoản</span>
+                      <span className="text-zinc-200 font-bold uppercase">{qrData.accountName}</span>
+                    </div>
 
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-zinc-500 font-semibold">Số tiền</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-brand font-black text-base">
-                      {pricing.grandTotal.toLocaleString()} VND
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-zinc-500 font-semibold">Số tiền</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-brand font-black text-base">
+                          {pricing.grandTotal.toLocaleString()} VND
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(pricing.grandTotal, 'Số tiền')}
+                          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                          title="Sao chép"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-zinc-500 font-semibold">Nội dung chuyển khoản</span>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-emerald-950/40 border border-emerald-800/30 text-emerald-400 font-black px-3 py-1 rounded-lg font-mono tracking-wider">
+                          {qrData.addInfo}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(qrData.addInfo, 'Nội dung')}
+                          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                          title="Sao chép"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hướng dẫn an toàn */}
+                  <div className="bg-amber-500/5 border border-amber-500/20 text-amber-500/90 p-3.5 rounded-2xl text-[11px] leading-relaxed font-semibold flex gap-2">
+                    <AlertTriangle size={18} className="shrink-0 text-amber-500 mt-0.5" />
+                    <span>
+                      <strong>Chú ý quan trọng:</strong> Bạn phải điền chính xác nội dung chuyển khoản <strong>{qrData.addInfo}</strong> để hệ thống tự động nhận diện và xuất vé. Giao dịch sai nội dung sẽ không được phê duyệt tự động.
                     </span>
-                    <button
-                      onClick={() => copyToClipboard(pricing.grandTotal, 'Số tiền')}
-                      className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
-                      title="Sao chép"
-                    >
-                      <Copy size={14} />
-                    </button>
                   </div>
-                </div>
-
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-zinc-500 font-semibold">Nội dung chuyển khoản</span>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-emerald-950/40 border border-emerald-800/30 text-emerald-400 font-black px-3 py-1 rounded-lg font-mono tracking-wider">
-                      {qrData.addInfo}
-                    </span>
-                    <button
-                      onClick={() => copyToClipboard(qrData.addInfo, 'Nội dung')}
-                      className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
-                      title="Sao chép"
-                    >
-                      <Copy size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Hướng dẫn an toàn */}
-              <div className="bg-amber-500/5 border border-amber-500/20 text-amber-500/90 p-3.5 rounded-2xl text-[11px] leading-relaxed font-semibold flex gap-2">
-                <AlertTriangle size={18} className="shrink-0 text-amber-500 mt-0.5" />
-                <span>
-                  <strong>Chú ý quan trọng:</strong> Bạn phải điền chính xác nội dung chuyển khoản <strong>{qrData.addInfo}</strong> để hệ thống tự động nhận diện và xuất vé. Giao dịch sai nội dung sẽ không được phê duyệt tự động.
-                </span>
-              </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -328,14 +394,29 @@ export const PaymentPage = () => {
             {/* Giả lập cho chế độ test */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-extrabold bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-lg">Chế độ test</span>
-              <Button
-                onClick={handleSimulatePayment}
-                variant="secondary"
-                loading={loading}
-                className="py-1.5 px-3.5 text-xs font-bold border border-emerald-800/30 text-emerald-400 hover:bg-emerald-950/20"
-              >
-                Nhấp để giả lập thanh toán thành công
-              </Button>
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <Button
+                  onClick={() => {
+                    if (isMomoScreen && momoData?.payUrl) {
+                      window.open(momoData.payUrl, '_blank');
+                    }
+                  }}
+                  variant="secondary"
+                  loading={loading}
+                  disabled={!isMomoScreen || !momoData?.payUrl}
+                  className="py-1.5 px-3.5 text-xs font-bold border border-emerald-800/30 text-emerald-400 hover:bg-emerald-950/20"
+                >
+                  Mở liên kết MoMo
+                </Button>
+                <Button
+                  onClick={handleSimulatePayment}
+                  variant="secondary"
+                  loading={loading}
+                  className="py-1.5 px-3.5 text-xs font-bold border border-emerald-800/30 text-emerald-400 hover:bg-emerald-950/20"
+                >
+                  Nhấp để giả lập thanh toán thành công
+                </Button>
+              </div>
             </div>
 
             <Button

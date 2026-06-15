@@ -101,6 +101,7 @@ const createBooking = async (req, res, next) => {
 
     // 7. Create the Booking
     const isVietQR = paymentMethod === 'vietqr';
+    const isPendingPayment = ['vietqr', 'momo', 'vnpay'].includes(paymentMethod);
     const booking = await Booking.create({
       user: userId,
       showtime: showtimeId,
@@ -110,7 +111,7 @@ const createBooking = async (req, res, next) => {
         quantity: c.quantity,
       })),
       totalPrice,
-      paymentStatus: isVietQR ? 'pending' : 'paid',
+      paymentStatus: isPendingPayment ? 'pending' : 'paid',
       paymentMethod,
     });
 
@@ -121,7 +122,7 @@ const createBooking = async (req, res, next) => {
       paymentMethod,
       transactionId,
       amount: totalPrice,
-      status: isVietQR ? 'pending' : 'completed',
+      status: isPendingPayment ? 'pending' : 'completed',
     });
 
     if (isVietQR) {
@@ -143,9 +144,9 @@ const createBooking = async (req, res, next) => {
             accountNo,
             accountName,
             addInfo,
-            qrUrl
-          }
-        }
+            qrUrl,
+          },
+        },
       });
     }
 

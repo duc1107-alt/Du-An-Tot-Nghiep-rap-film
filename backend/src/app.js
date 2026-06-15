@@ -12,6 +12,7 @@ const bookingRoutes = require('./routes/booking.routes');
 const concessionRoutes = require('./routes/concession.routes');
 const adminRoutes = require('./routes/admin.routes');
 const reviewRoutes = require('./routes/review.routes');
+const momoRoutes = require('./routes/momo.routes');
 
 // Connect to MongoDB
 connectDB();
@@ -37,6 +38,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/concessions', concessionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/payments/momo', momoRoutes);
 
 // Base route status check
 app.get('/api/status', (req, res) => {

@@ -24,6 +24,11 @@ const {
   deleteShowtime,
   getDashboardStats,
   getRevenueReport,
+  listBookings,
+  deleteBooking,
+  listUsers,
+  updateUserRole,
+  deleteUser,
 } = require("../controllers/admin.controller");
 const { protect, admin } = require("../middleware/auth.middleware");
 

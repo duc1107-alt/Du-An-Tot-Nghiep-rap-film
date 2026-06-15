@@ -199,7 +199,11 @@ export const PaymentForm = ({ onSubmit, loading, pricing }) => {
             loading={loading}
             className="w-full py-3.5 rounded-2xl font-black text-sm"
           >
-            {method === 'vietqr' ? `Tiến hành chuyển khoản VietQR` : `Tôi đã hoàn tất thanh toán`}
+            {method === 'vietqr'
+              ? `Tiến hành chuyển khoản VietQR`
+              : method === 'momo'
+              ? `Tiến hành thanh toán MoMo`
+              : `Tôi đã hoàn tất thanh toán`}
           </Button>
         </div>
       )}
