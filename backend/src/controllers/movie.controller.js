@@ -37,7 +37,37 @@ const getMovies = async (req, res, next) => {
       query.rating = rating;
     }
 
-    const movies = await Movie.find(query).sort({ releaseDate: -1 });
+    const movies = await Movie.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'movie',
+          as: 'movieReviews',
+        },
+      },
+      {
+        $addFields: {
+          reviewsCount: { $size: '$movieReviews' },
+          reviewsAverage: {
+            $cond: {
+              if: { $eq: [{ $size: '$movieReviews' }, 0] },
+              then: 0,
+              else: { $round: [{ $avg: '$movieReviews.rating' }, 1] },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          movieReviews: 0,
+        },
+      },
+      {
+        $sort: { releaseDate: -1 },
+      },
+    ]);
 
     res.json({
       success: true,

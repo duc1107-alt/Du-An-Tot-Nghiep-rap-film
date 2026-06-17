@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Film, User, Clock, Calendar, Ticket, ChevronRight, Play } from 'lucide-react';
 import bookingService from '../../services/booking.service';
@@ -14,6 +14,8 @@ export const MovieDetail = ({ movie }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [loadingShowtimes, setLoadingShowtimes] = useState(false);
   const [trailerError, setTrailerError] = useState(false);
+  const [sortBy, setSortBy] = useState('earliest');
+  const [formatFilter, setFormatFilter] = useState('');
 
   // ── Lấy title / description / language theo ngôn ngữ trực tiếp từ DB ──────
   // Nếu phim có titleEN/descriptionEN thì dùng, không thì fallback về bản gốc.
@@ -71,21 +73,41 @@ export const MovieDetail = ({ movie }) => {
 
   const handleShowtimeClick = (showtimeId, isPastShowtime) => {
     if (isPastShowtime) {
-      alert('Suất chiếu này đã bắt đầu hoặc đã kết thúc. Vui lòng chọn suất chiếu khác.');
+      alert(t('showtime.alertPastShowtime'));
       return;
     }
     navigate(`/booking/${showtimeId}`);
   };
 
-  // Nhóm lịch chiếu theo Rạp
-  const groupedShowtimes = showtimes.reduce((acc, showtime) => {
-    const theaterName = showtime.theater?.name || 'Rạp không xác định';
-    if (!acc[theaterName]) {
-      acc[theaterName] = [];
+  // Lọc và sắp xếp showtimes client-side
+  const processedShowtimes = useMemo(() => {
+    if (!showtimes) return [];
+
+    let filtered = [...showtimes];
+    if (formatFilter) {
+      filtered = filtered.filter((s) => s.format === formatFilter);
     }
-    acc[theaterName].push(showtime);
-    return acc;
-  }, {});
+
+    filtered.sort((a, b) => {
+      const timeA = new Date(a.startTime).getTime();
+      const timeB = new Date(b.startTime).getTime();
+      return sortBy === 'earliest' ? timeA - timeB : timeB - timeA;
+    });
+
+    return filtered;
+  }, [showtimes, formatFilter, sortBy]);
+
+  // Nhóm lịch chiếu theo Rạp
+  const groupedShowtimes = useMemo(() => {
+    return processedShowtimes.reduce((acc, showtime) => {
+      const theaterName = showtime.theater?.name || 'Rạp không xác định';
+      if (!acc[theaterName]) {
+        acc[theaterName] = [];
+      }
+      acc[theaterName].push(showtime);
+      return acc;
+    }, {});
+  }, [processedShowtimes]);
 
   return (
     <div className="space-y-12">
@@ -230,6 +252,38 @@ export const MovieDetail = ({ movie }) => {
             </div>
           </div>
 
+          {/* Sub-row: Sort and Format Filter */}
+          {!loadingShowtimes && Object.keys(groupedShowtimes).length > 0 && (
+            <div className="flex flex-wrap items-center gap-6 py-4 border-b border-white/5 relative z-10">
+              {/* Sort selector */}
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('showtime.sortBy')}:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white pl-3.5 pr-9 py-2 text-xs rounded-xl focus:border-brand/60 outline-none cursor-pointer transition-colors"
+                >
+                  <option value="earliest">{t('showtime.sort.earliest')}</option>
+                  <option value="latest">{t('showtime.sort.latest')}</option>
+                </select>
+              </div>
+
+              {/* Format selector */}
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('showtime.format')}:</span>
+                <select
+                  value={formatFilter}
+                  onChange={(e) => setFormatFilter(e.target.value)}
+                  className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white pl-3.5 pr-9 py-2 text-xs rounded-xl focus:border-brand/60 outline-none cursor-pointer transition-colors"
+                >
+                  <option value="">{t('showtime.format.all')}</option>
+                  <option value="2D">2D</option>
+                  <option value="3D">3D</option>
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* Danh sách lịch chiếu được nhóm theo rạp */}
           {loadingShowtimes ? (
             <div className="py-16 flex justify-center items-center gap-3 text-zinc-400 font-semibold relative z-10">
@@ -281,7 +335,7 @@ export const MovieDetail = ({ movie }) => {
                           </div>
                           <div className="flex items-center gap-2">
                             {isPastShowtime ? (
-                              <span className="text-[10px] uppercase font-black tracking-wider text-red-400">Đã bắt đầu</span>
+                              <span className="text-[10px] uppercase font-black tracking-wider text-red-400">{t('showtime.started')}</span>
                             ) : (
                               <ChevronRight size={16} className="text-zinc-600 group-hover:text-brand transition-all" />
                             )}
