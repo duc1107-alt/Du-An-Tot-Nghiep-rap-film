@@ -52,6 +52,8 @@ export const BookingHistoryPage = () => {
         return <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">{t('history.status.pending')}</span>;
       case 'refunded':
         return <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">{t('history.status.refunded')}</span>;
+      case 'failed':
+        return <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-red-500/10 text-red-400 border border-red-500/20">Thất bại</span>;
       default:
         return <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">{status}</span>;
     }
