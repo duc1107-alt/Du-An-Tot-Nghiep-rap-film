@@ -37,7 +37,7 @@ const seedData = async () => {
   try {
     console.log('🔌 Connecting to MongoDB...');
     await mongoose.connect(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/movie-ticket-booking'
+      process.env.MONGO_URI || 'mongodb://localhost:27017/movie_ticket_booking'
     );
     console.log('✅ Connected!\n');
 
@@ -834,29 +834,47 @@ const seedData = async () => {
 
     // ── 7. Showtimes ──────────────────────────────────────────────────────────
     console.log('\n⏰ Creating Showtimes...');
+    // Các khung giờ cách nhau đủ để không trùng (mỗi slot cách nhau ~3h)
     const showtimeSlots = [
-      { hour: 8, minute: 45 },
-      { hour: 11, minute: 30 },
-      { hour: 12, minute: 0 },
-      { hour: 13, minute: 30 },
-      { hour: 15, minute: 30 },
-      { hour: 17, minute: 30 },
-      { hour: 19, minute: 30 },
-      { hour: 20, minute: 45 },
-      { hour: 22, minute: 0 },
+      { hour: 8, minute: 0 },
+      { hour: 11, minute: 0 },
+      { hour: 14, minute: 0 },
+      { hour: 17, minute: 0 },
+      { hour: 20, minute: 0 },
     ];
 
     const showtimesData = [];
     const prices = { IMAX: 180000, '3D': 90000, '2D': 80000, GOLDCLASS: 300000 };
 
+    // roomSchedule: { "roomId_dateStr": [ {start, end} ] } - track lịch đã dùng
+    const roomSchedule = {};
+
+    const hasConflict = (roomId, dateStr, newStart, newEnd) => {
+      const key = `${roomId}_${dateStr}`;
+      if (!roomSchedule[key]) return false;
+      return roomSchedule[key].some(({ start, end }) =>
+        newStart < end && newEnd > start
+      );
+    };
+
+    const markUsed = (roomId, dateStr, newStart, newEnd) => {
+      const key = `${roomId}_${dateStr}`;
+      if (!roomSchedule[key]) roomSchedule[key] = [];
+      roomSchedule[key].push({ start: newStart, end: newEnd });
+    };
+
     // Generate showtimes for the next 7 days + past 3 days
     for (let dayOffset = -3; dayOffset <= 7; dayOffset++) {
       const baseDate = new Date();
       baseDate.setDate(baseDate.getDate() + dayOffset);
+      const dateStr = baseDate.toISOString().slice(0, 10);
 
-      for (const movie of nowShowingMovies) {
+      // Shuffle movies để phân phối đều hơn
+      const shuffledMovies = [...nowShowingMovies].sort(() => Math.random() - 0.5);
+
+      for (const movie of shuffledMovies) {
         // Pick 2 random rooms per movie per day
-        const selectedRooms = rooms
+        const selectedRooms = [...rooms]
           .sort(() => Math.random() - 0.5)
           .slice(0, 2);
 
@@ -865,14 +883,25 @@ const seedData = async () => {
             (t) => t._id.toString() === room.theater.toString()
           );
 
-          // Use all time slots
-          const selectedSlots = showtimeSlots;
+          // Shuffle slots để phân phối đều hơn
+          const shuffledSlots = [...showtimeSlots].sort(() => Math.random() - 0.5);
 
-          for (const slot of selectedSlots) {
+          // Mỗi phim chỉ chiếu 1-2 suất tại mỗi phòng trong ngày
+          let slotsAdded = 0;
+          for (const slot of shuffledSlots) {
+            if (slotsAdded >= 2) break; // Tối đa 2 suất/phim/phòng/ngày
+
             const startTime = new Date(baseDate);
             startTime.setHours(slot.hour, slot.minute, 0, 0);
-            const endTime = addMinutes(startTime, movie.duration + 15);
+            // endTime bao gồm 20 phút dọn phòng
+            const endTime = addMinutes(startTime, movie.duration + 20);
 
+            // Bỏ qua nếu trùng lịch phòng
+            if (hasConflict(room._id.toString(), dateStr, startTime, endTime)) {
+              continue;
+            }
+
+            markUsed(room._id.toString(), dateStr, startTime, endTime);
             showtimesData.push({
               movie: movie._id,
               theater: theater._id,
@@ -883,6 +912,7 @@ const seedData = async () => {
               format: room.type,
               bookedSeats: [],
             });
+            slotsAdded++;
           }
         }
       }
