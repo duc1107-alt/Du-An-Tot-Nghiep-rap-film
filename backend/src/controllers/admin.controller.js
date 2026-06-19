@@ -275,18 +275,18 @@ const createShowtime = async (req, res, next) => {
     const end = new Date(start.getTime() + movie.duration * 60000 + 20 * 60000); // add 20 mins break time
 
     // Prevent showtime overlapping in the same room
+    // Sử dụng strict inequality: kự này bắt đầu trước khi kự kia kết thúc AND kự này kết thúc sau khi kự kia bắt đầu
     const overlappingShowtime = await Showtime.findOne({
       room: roomId,
-      $or: [
-        { startTime: { $gte: start, $lt: end } },
-        { endTime: { $gt: start, $lte: end } },
-        { startTime: { $lte: start }, endTime: { $gte: end } },
-      ],
+      startTime: { $lt: end },
+      endTime: { $gt: start },
     });
 
     if (overlappingShowtime) {
       res.status(400);
-      throw new Error(`Lịch chiếu bị trùng! Phòng này đã có lịch chiếu khác từ ${overlappingShowtime.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} đến ${overlappingShowtime.endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}.`);
+      const existStart = overlappingShowtime.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const existEnd = overlappingShowtime.endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      throw new Error(`⚠️ Lịch chiếu bị trùng! Phòng này đã có suất chiếu "${overlappingShowtime.movie ? (await Movie.findById(overlappingShowtime.movie).select('title'))?.title || 'Khác' : 'Khác'}" từ ${existStart} đến ${existEnd}. Vui lòng chọn giờ chiếu khác.`);
     }
 
     const showtime = await Showtime.create({
@@ -332,16 +332,16 @@ const updateShowtime = async (req, res, next) => {
     const overlappingShowtime = await Showtime.findOne({
       _id: { $ne: showtimeId },
       room: roomId,
-      $or: [
-        { startTime: { $gte: start, $lt: end } },
-        { endTime: { $gt: start, $lte: end } },
-        { startTime: { $lte: start }, endTime: { $gte: end } },
-      ],
+      startTime: { $lt: end },
+      endTime: { $gt: start },
     });
 
     if (overlappingShowtime) {
       res.status(400);
-      throw new Error(`Lịch chiếu bị trùng! Phòng này đã có lịch chiếu khác từ ${overlappingShowtime.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} đến ${overlappingShowtime.endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}.`);
+      const existStart = overlappingShowtime.startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const existEnd = overlappingShowtime.endTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const existMovie = await Movie.findById(overlappingShowtime.movie).select('title');
+      throw new Error(`⚠️ Lịch chiếu bị trùng! Phòng này đã có suất chiếu "${existMovie?.title || 'Khác'}" từ ${existStart} đến ${existEnd}. Vui lòng chọn giờ chiếu khác.`);
     }
 
     const updateData = {

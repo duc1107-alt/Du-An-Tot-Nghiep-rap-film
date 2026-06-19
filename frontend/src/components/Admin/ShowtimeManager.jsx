@@ -41,12 +41,13 @@ export const ShowtimeManager = () => {
     setModalRoomsLoading(true);
     try {
       const rmRes = await adminService.getRooms(theaterId);
-      const roomArr = Array.isArray(rmRes) ? rmRes : [];
+      // API interceptor unwraps to response.data = { success, data: [...], count }
+      const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
       setModalRooms(roomArr);
-      // Tự động chọn phòng đầu tiên
-      if (roomArr.length > 0) {
+      // Không tự động ghi đè roomId khi đang edit
+      if (roomArr.length > 0 && !editingShowtime) {
         setForm((prev) => ({ ...prev, roomId: roomArr[0]._id }));
-      } else {
+      } else if (roomArr.length === 0) {
         setForm((prev) => ({ ...prev, roomId: '' }));
       }
     } catch (err) {
@@ -55,7 +56,7 @@ export const ShowtimeManager = () => {
     } finally {
       setModalRoomsLoading(false);
     }
-  }, []);
+  }, [editingShowtime]);
 
   // ────────────────────────────────────────────────
   // Load lịch chiếu + phòng của rạp đang xem
@@ -67,8 +68,11 @@ export const ShowtimeManager = () => {
         adminService.getRooms(theaterId),
         bookingService.getShowtimes({ theaterId }),
       ]);
-      setRooms(Array.isArray(rmRes) ? rmRes : []);
-      setShowtimes(Array.isArray(stRes) ? stRes : []);
+      // Unwrap {success, data: [...]} nếu cần
+      const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
+      const stArr = Array.isArray(stRes) ? stRes : (Array.isArray(stRes?.data) ? stRes.data : []);
+      setRooms(roomArr);
+      setShowtimes(stArr);
     } catch (err) {
       console.error('Lỗi reload lịch chiếu:', err);
     }
@@ -83,7 +87,8 @@ export const ShowtimeManager = () => {
       try {
         // Lấy tất cả rạp
         const thRes = await adminService.getTheaters();
-        const thArr = Array.isArray(thRes) ? thRes : [];
+        // Unwrap {success, data: [...]} nếu cần
+        const thArr = Array.isArray(thRes) ? thRes : (Array.isArray(thRes?.data) ? thRes.data : []);
         setTheaters(thArr);
 
         const firstTheaterId = thArr[0]?._id || '';
@@ -94,7 +99,8 @@ export const ShowtimeManager = () => {
 
         // Lấy TẤT CẢ phim cho admin (không lọc status)
         const mvRes = await movieService.getMovies();
-        const mvArr = Array.isArray(mvRes) ? mvRes : [];
+        // Unwrap {success, data: [...]} nếu cần
+        const mvArr = Array.isArray(mvRes) ? mvRes : (Array.isArray(mvRes?.data) ? mvRes.data : []);
         setMovies(mvArr);
 
         // Load phòng + lịch chiếu của rạp đầu tiên
@@ -103,8 +109,10 @@ export const ShowtimeManager = () => {
             adminService.getRooms(firstTheaterId),
             bookingService.getShowtimes({ theaterId: firstTheaterId }),
           ]);
-          setRooms(Array.isArray(rmRes) ? rmRes : []);
-          setShowtimes(Array.isArray(stRes) ? stRes : []);
+          const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
+          const stArr = Array.isArray(stRes) ? stRes : (Array.isArray(stRes?.data) ? stRes.data : []);
+          setRooms(roomArr);
+          setShowtimes(stArr);
         }
       } catch (err) {
         console.error('Lỗi khởi tạo ShowtimeManager:', err);
