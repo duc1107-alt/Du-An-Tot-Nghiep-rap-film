@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Film, User, Clock, Calendar, Ticket, ChevronRight, Play } from 'lucide-react';
+import { Film, User, Clock, Calendar, Ticket, ChevronRight, Play, ShieldAlert } from 'lucide-react';
 import bookingService from '../../services/booking.service';
 import Button from '../common/Button';
 import { useLanguage } from '../../context/LanguageContext';
+import useAuth from '../../hooks/useAuth';
+import Modal from '../common/Modal';
 import ReviewSection from './ReviewSection';
 import { getPosterUrl, getEmbedUrl } from '../../utils/constants';
 
 export const MovieDetail = ({ movie }) => {
   const navigate = useNavigate();
   const { language, t } = useLanguage();
+  const { user } = useAuth();
+  const [ageWarning, setAgeWarning] = useState({ isOpen: false, movieTitle: '', requiredAge: 0, userAge: 0 });
   const [showtimes, setShowtimes] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [loadingShowtimes, setLoadingShowtimes] = useState(false);
@@ -76,6 +80,27 @@ export const MovieDetail = ({ movie }) => {
       alert(t('showtime.alertPastShowtime'));
       return;
     }
+
+    if (user) {
+      const userAge = user.age || 0;
+      const getMovieAgeLimit = (r) => {
+        if (!r) return 0;
+        if (r === 'P') return 0;
+        const match = r.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+      };
+      const requiredAge = getMovieAgeLimit(movie.rating);
+      if (userAge < requiredAge) {
+        setAgeWarning({
+          isOpen: true,
+          movieTitle: movie.title,
+          requiredAge,
+          userAge,
+        });
+        return;
+      }
+    }
+
     navigate(`/booking/${showtimeId}`);
   };
 
@@ -135,6 +160,11 @@ export const MovieDetail = ({ movie }) => {
               <span className="text-xs font-black bg-white text-black px-3 py-1 rounded-md tracking-widest uppercase shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 {movie.rating}
               </span>
+              {movie.rating && (
+                <span className="text-red-400 font-extrabold text-xs bg-red-500/10 border border-red-500/20 px-3.5 py-1 rounded-full backdrop-blur-sm">
+                  {movie.rating === 'P' ? 'Mọi lứa tuổi (P)' : `Yêu cầu từ ${movie.rating.match(/\d+/)?.[0] || '0'} tuổi trở lên`}
+                </span>
+              )}
               <span className="text-zinc-400 font-semibold text-sm flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/5 backdrop-blur-sm">
                 <Clock size={14} className="text-brand" /> {movie.duration} {language === 'vi' ? 'phút' : 'min'}
               </span>
@@ -181,6 +211,12 @@ export const MovieDetail = ({ movie }) => {
               <div className="space-y-1">
                 <p className="text-zinc-500 uppercase tracking-wider text-[10px] font-black">Quốc gia</p>
                 <p className="text-zinc-200 font-medium">{movie.country || 'Chưa cập nhật'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-zinc-500 uppercase tracking-wider text-[10px] font-black">Giới hạn tuổi</p>
+                <p className="text-zinc-200 font-medium">
+                  {movie.rating === 'P' ? 'Mọi lứa tuổi' : `Từ ${movie.rating.match(/\d+/)?.[0] || '0'} tuổi trở lên`}
+                </p>
               </div>
             </div>
             {movie.cast && movie.cast.length > 0 && (
@@ -353,6 +389,36 @@ export const MovieDetail = ({ movie }) => {
 
       {/* 4. Khu vực đánh giá / bình luận phim */}
       <ReviewSection movieId={movie._id} />
+
+      {/* Modal Cảnh Báo Độ Tuổi */}
+      <Modal
+        isOpen={ageWarning.isOpen}
+        onClose={() => setAgeWarning({ ...ageWarning, isOpen: false })}
+        title="Thông báo: Giới hạn độ tuổi"
+        size="sm"
+      >
+        <div className="flex flex-col items-center text-center space-y-4 py-4">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)] animate-pulse">
+            <ShieldAlert size={36} />
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-extrabold text-white text-base">Bạn chưa đủ tuổi xem phim</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
+              Phim <span className="text-zinc-200 font-bold">"{ageWarning.movieTitle}"</span> yêu cầu độ tuổi tối thiểu từ <span className="text-red-400 font-bold">{ageWarning.requiredAge} tuổi</span> trở lên.
+            </p>
+            <p className="text-[11px] text-zinc-500 font-medium">
+              Số tuổi tài khoản hiện tại của bạn: <span className="text-zinc-300 font-bold">{ageWarning.userAge} tuổi</span>.
+            </p>
+          </div>
+          <Button
+            onClick={() => setAgeWarning({ ...ageWarning, isOpen: false })}
+            variant="primary"
+            className="w-full py-2.5 rounded-xl font-bold mt-2"
+          >
+            Đã hiểu và quay lại
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

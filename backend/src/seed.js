@@ -68,6 +68,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'admin',
         phone: '0901111111',
+        age: 30,
       },
       {
         username: 'Staff HCM',
@@ -75,6 +76,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0902222222',
+        age: 28,
       },
       {
         username: 'Nguyễn Văn An',
@@ -82,6 +84,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0903333333',
+        age: 15,
       },
       {
         username: 'Trần Thị Bình',
@@ -89,6 +92,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0904444444',
+        age: 22,
       },
       {
         username: 'Lê Hoàng Cường',
@@ -96,6 +100,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0905555555',
+        age: 10,
       },
       {
         username: 'Phạm Thị Dung',
@@ -103,6 +108,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0906666666',
+        age: 17,
       },
       {
         username: 'Võ Minh Đức',
@@ -110,6 +116,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0907777777',
+        age: 12,
       },
       {
         username: 'Đặng Quỳnh Như',
@@ -117,6 +124,7 @@ const seedData = async () => {
         password: hashedPassword,
         role: 'user',
         phone: '0908888888',
+        age: 19,
       },
     ]);
     console.log(`   ✔ Created ${users.length} users`);
