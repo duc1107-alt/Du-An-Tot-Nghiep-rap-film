@@ -298,7 +298,7 @@ export const MovieManager = () => {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">Phân Loại Độ Tuổi</label>
               <select name="rating" value={form.rating} onChange={handleChange} className="w-full bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer">
                 <option value="P">P (Mọi lứa tuổi)</option>
-                <option value="C13">C13 (Trên 13 tuổi)</option>
+                <option value="T13">T13 (Trên 13 tuổi)</option>
                 <option value="T16">T16 (Trên 16 tuổi)</option>
                 <option value="T18">T18 (Trên 18 tuổi)</option>
               </select>

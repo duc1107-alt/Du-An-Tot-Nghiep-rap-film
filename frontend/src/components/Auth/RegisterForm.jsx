@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Lock, Phone, UserPlus } from 'lucide-react';
+import { User, Mail, Lock, Phone, UserPlus, Calendar } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import useAuth from '../../hooks/useAuth';
@@ -11,6 +11,7 @@ export const RegisterForm = ({ onSuccess }) => {
     email: '',
     password: '',
     phone: '',
+    dob: '',
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -38,6 +39,21 @@ export const RegisterForm = ({ onSuccess }) => {
       errors.phone = 'Số điện thoại phải từ 10-11 chữ số';
     }
 
+    if (!formData.dob) {
+      errors.dob = 'Vui lòng chọn ngày sinh';
+    } else {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      if (birthDate > today) {
+        errors.dob = 'Ngày sinh không thể ở tương lai';
+      } else {
+        const ageNum = today.getFullYear() - birthDate.getFullYear();
+        if (ageNum > 120) {
+          errors.dob = 'Ngày sinh không hợp lệ';
+        }
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -53,12 +69,26 @@ export const RegisterForm = ({ onSuccess }) => {
     e.preventDefault();
     if (!validate()) return;
 
+    const calculateAge = (dobString) => {
+      const today = new Date();
+      const birthDate = new Date(dobString);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    };
+
+    const age = calculateAge(formData.dob);
+
     try {
       await register(
         formData.username,
         formData.email,
         formData.password,
-        formData.phone
+        formData.phone,
+        age
       );
       if (onSuccess) onSuccess();
     } catch (err) {
@@ -105,6 +135,18 @@ export const RegisterForm = ({ onSuccess }) => {
         onChange={handleChange}
         error={formErrors.phone}
         icon={<Phone size={18} />}
+      />
+
+      <Input
+        name="dob"
+        type="date"
+        label="Ngày sinh"
+        placeholder="Chọn ngày sinh của bạn"
+        value={formData.dob}
+        onChange={handleChange}
+        error={formErrors.dob}
+        icon={<Calendar size={18} />}
+        required
       />
 
       <Input
