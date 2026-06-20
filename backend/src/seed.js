@@ -37,7 +37,7 @@ const seedData = async () => {
   try {
     console.log('🔌 Connecting to MongoDB...');
     await mongoose.connect(
-      process.env.MONGO_URI || 'mongodb://localhost:27017/movie_ticket_booking'
+      process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/movie-ticket-booking'
     );
     console.log('✅ Connected!\n');
 
@@ -708,32 +708,19 @@ const seedData = async () => {
     console.log('\n🏢 Creating Theaters...');
     const theaters = await Theater.insertMany([
       {
-        name: 'Nova Cinema Hồ Chí Minh',
-        address: '123 Lê Lợi, Phường Bến Thành, Quận 1',
-        city: 'Hồ Chí Minh',
-        phone: '19009090',
-      },
-      {
         name: 'Nova Cinema Hà Nội',
-        address: '456 Tràng Tiền, Phường Tràng Tiền, Quận Hoàn Kiếm',
+        address: '123 Hoàng Quốc Việt, Phường Cầu Giấy, Quận Cầu Giấy, Hà Nội',
         city: 'Hà Nội',
-        phone: '19009191',
-      },
-      {
-        name: 'Nova Cinema Đà Nẵng',
-        address: '789 Nguyễn Văn Linh, Phường Thạc Gián, Quận Thanh Khê',
-        city: 'Đà Nẵng',
-        phone: '19009292',
+        phone: '1900 9090',
       },
     ]);
     console.log(`   ✔ Created ${theaters.length} theaters`);
 
-    const [theaterHCM, theaterHN, theaterDN] = theaters;
+    const theaterHCM = theaters[0];
 
     // ── 5. Rooms ──────────────────────────────────────────────────────────────
     console.log('\n🚪 Creating Rooms...');
     const rooms = await Room.insertMany([
-      // HCM Rooms
       {
         name: 'Phòng 1 - IMAX',
         theater: theaterHCM._id,
@@ -758,29 +745,27 @@ const seedData = async () => {
         type: 'GOLDCLASS',
         capacity: 30,
       },
-      // Hanoi Rooms
       {
-        name: 'Phòng 1 - 3D',
-        theater: theaterHN._id,
+        name: 'Phòng 5 - 3D',
+        theater: theaterHCM._id,
         type: '3D',
         capacity: 100,
       },
       {
-        name: 'Phòng 2 - 2D',
-        theater: theaterHN._id,
+        name: 'Phòng 6 - 2D',
+        theater: theaterHCM._id,
         type: '2D',
         capacity: 70,
       },
-      // Da Nang Rooms
       {
-        name: 'Phòng 1 - 2D',
-        theater: theaterDN._id,
+        name: 'Phòng 7 - 2D',
+        theater: theaterHCM._id,
         type: '2D',
         capacity: 60,
       },
       {
-        name: 'Phòng 2 - 3D',
-        theater: theaterDN._id,
+        name: 'Phòng 8 - 3D',
+        theater: theaterHCM._id,
         type: '3D',
         capacity: 80,
       },
