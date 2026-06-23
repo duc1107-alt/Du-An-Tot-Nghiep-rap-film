@@ -33,8 +33,7 @@ export const BookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = useState(1); // Bước 1: Ghế ngồi, Bước 2: Bắp nước
   const [heldSeatsByOthers, setHeldSeatsByOthers] = useState([]);
-  const [ticketQuantity, setTicketQuantity] = useState(2);
-  const [ageWarning, setAgeWarning] = useState({ isOpen: false });
+  const [ageWarning, setAgeWarning] = useState({ isOpen: false, movieTitle: '', requiredAge: 0, userAge: 0, movieId: '' });
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -231,20 +230,6 @@ export const BookingPage = () => {
                   <Armchair className="text-brand" size={20} />
                   <h3 className="text-lg font-black text-zinc-200">Chọn vị trí ghế ngồi</h3>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  <Ticket className="text-zinc-400" size={16} />
-                  <span className="text-sm font-bold text-zinc-300">Số lượng vé:</span>
-                  <select
-                    value={ticketQuantity}
-                    onChange={(e) => setTicketQuantity(Number(e.target.value))}
-                    className="bg-zinc-800 border border-zinc-700 text-white rounded-lg px-3 py-1.5 text-sm font-bold outline-none focus:border-brand transition-colors"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
 
               <SeatMap
@@ -252,7 +237,6 @@ export const BookingPage = () => {
                 bookedSeats={selectedShowtime?.bookedSeats || []}
                 selectedSeats={selectedSeats}
                 heldSeatsByOthers={heldSeatsByOthers}
-                ticketQuantity={ticketQuantity}
                 onSeatClick={handleSeatClick}
               />
 
