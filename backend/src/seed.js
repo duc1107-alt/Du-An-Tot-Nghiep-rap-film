@@ -37,9 +37,55 @@ const seedData = async () => {
   try {
     console.log('🔌 Connecting to MongoDB...');
     await mongoose.connect(
-      process.env.MONGO_URI || 'mongodb://localhost:27017/movie_ticket_booking'
+      process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/movie-ticket-booking'
     );
     console.log('✅ Connected!\n');
+ 
+    // Check if backup files exist and use them instead of hardcoded seed
+    const fs = require('fs');
+    const path = require('path');
+    const BACKUP_DIR = path.join(__dirname, '..', 'data', 'db-backup');
+    const backupExists = fs.existsSync(BACKUP_DIR) && 
+                         fs.readdirSync(BACKUP_DIR).some(file => file.endsWith('.json'));
+
+    if (backupExists) {
+      console.log('📂 Found database backup in data/db-backup/. Restoring from backup instead of default seed...\n');
+      
+      console.log('🗑️  Clearing all old collections...');
+      const MODELS_MAP = {
+        users: User,
+        movies: Movie,
+        theaters: Theater,
+        rooms: Room,
+        seats: Seat,
+        showtimes: Showtime,
+        concessions: Concession,
+        bookings: Booking,
+        payments: Payment
+      };
+
+      for (const [key, Model] of Object.entries(MODELS_MAP)) {
+        await Model.deleteMany({});
+      }
+      console.log('✅ Old data cleared.\n');
+
+      for (const [key, Model] of Object.entries(MODELS_MAP)) {
+        const filePath = path.join(BACKUP_DIR, `${key}.json`);
+        if (fs.existsSync(filePath)) {
+          console.log(`📥 Importing collection: ${key}...`);
+          const fileContent = fs.readFileSync(filePath, 'utf-8');
+          const documents = JSON.parse(fileContent);
+          
+          if (documents && documents.length > 0) {
+            await Model.insertMany(documents);
+            console.log(`   ✔ Imported ${documents.length} documents into ${key}`);
+          }
+        }
+      }
+
+      console.log('\n🎉 DATABASE RESTORED FROM BACKUP SUCCESSFULLY!');
+      process.exit(0);
+    }
 
     // ── 1. Clear all collections ─────────────────────────────────────────────
     console.log('🗑️  Clearing old data...');
@@ -708,32 +754,19 @@ const seedData = async () => {
     console.log('\n🏢 Creating Theaters...');
     const theaters = await Theater.insertMany([
       {
-        name: 'Nova Cinema Hồ Chí Minh',
-        address: '123 Lê Lợi, Phường Bến Thành, Quận 1',
-        city: 'Hồ Chí Minh',
-        phone: '19009090',
-      },
-      {
         name: 'Nova Cinema Hà Nội',
-        address: '456 Tràng Tiền, Phường Tràng Tiền, Quận Hoàn Kiếm',
+        address: '123 Hoàng Quốc Việt, Phường Cầu Giấy, Quận Cầu Giấy, Hà Nội',
         city: 'Hà Nội',
-        phone: '19009191',
-      },
-      {
-        name: 'Nova Cinema Đà Nẵng',
-        address: '789 Nguyễn Văn Linh, Phường Thạc Gián, Quận Thanh Khê',
-        city: 'Đà Nẵng',
-        phone: '19009292',
+        phone: '1900 9090',
       },
     ]);
     console.log(`   ✔ Created ${theaters.length} theaters`);
 
-    const [theaterHCM, theaterHN, theaterDN] = theaters;
+    const theaterHCM = theaters[0];
 
     // ── 5. Rooms ──────────────────────────────────────────────────────────────
     console.log('\n🚪 Creating Rooms...');
     const rooms = await Room.insertMany([
-      // HCM Rooms
       {
         name: 'Phòng 1 - IMAX',
         theater: theaterHCM._id,
@@ -758,29 +791,27 @@ const seedData = async () => {
         type: 'GOLDCLASS',
         capacity: 30,
       },
-      // Hanoi Rooms
       {
-        name: 'Phòng 1 - 3D',
-        theater: theaterHN._id,
+        name: 'Phòng 5 - 3D',
+        theater: theaterHCM._id,
         type: '3D',
         capacity: 100,
       },
       {
-        name: 'Phòng 2 - 2D',
-        theater: theaterHN._id,
+        name: 'Phòng 6 - 2D',
+        theater: theaterHCM._id,
         type: '2D',
         capacity: 70,
       },
-      // Da Nang Rooms
       {
-        name: 'Phòng 1 - 2D',
-        theater: theaterDN._id,
+        name: 'Phòng 7 - 2D',
+        theater: theaterHCM._id,
         type: '2D',
         capacity: 60,
       },
       {
-        name: 'Phòng 2 - 3D',
-        theater: theaterDN._id,
+        name: 'Phòng 8 - 3D',
+        theater: theaterHCM._id,
         type: '3D',
         capacity: 80,
       },

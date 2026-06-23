@@ -4,7 +4,6 @@ const Seat = require('../models/Seat.model');
 const Concession = require('../models/Concession.model');
 const Payment = require('../models/Payment.model');
 const sendEmail = require('../utils/sendEmail');
-const { checkAndExpirePendingBookings } = require('../utils/bookingCleanup');
 
 // @desc    Create a new booking and process payment
 // @route   POST /api/bookings
@@ -29,6 +28,22 @@ const createBooking = async (req, res, next) => {
     if (!showtime) {
       res.status(404);
       throw new Error('Showtime not found');
+    }
+
+    // 1.5 KIỂM TRA ĐỘ TUỔI CỦA NGƯỜI DÙNG DỰA TRÊN PHÂN LOẠI PHIM
+    const movieRating = showtime.movie.rating; // Ví dụ: 'P', 'T13', 'T16', 'T18'
+    const userAge = req.user.age;
+    
+    if (movieRating && movieRating !== 'P') {
+      let requiredAge = 0;
+      if (movieRating === 'T13') requiredAge = 13;
+      else if (movieRating === 'T16') requiredAge = 16;
+      else if (movieRating === 'T18') requiredAge = 18;
+
+      if (userAge < requiredAge) {
+        res.status(400);
+        throw new Error(`Bạn chưa đủ tuổi để xem phim này. Phim yêu cầu độ tuổi từ ${requiredAge} trở lên (bạn hiện ${userAge} tuổi).`);
+      }
     }
 
     // 2. Check if showtime has already passed
@@ -130,6 +145,9 @@ const createBooking = async (req, res, next) => {
       res.status(400);
       throw new Error('Một hoặc nhiều ghế bạn chọn đã được đặt trước đó. Vui lòng chọn lại ghế.');
     }
+
+    // Release real-time holds and broadcast seat_booked to all clients
+    confirmBookingClearHolds(showtimeId, normalizedSeats, userId);
 
     // 7. Create the Booking
     const isVietQR = paymentMethod === 'vietqr';
