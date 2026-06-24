@@ -1,25 +1,36 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, Check, X, Star, SlidersHorizontal } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Search, ChevronDown, Check, X, Star, SlidersHorizontal, Calendar, Film } from 'lucide-react';
 import { MOVIE_GENRES } from '../../utils/constants';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const MovieFilter = ({ filters, onChange }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
+  const statusRef = useRef(null);
   const genreRef = useRef(null);
   const ratingRef = useRef(null);
+  const dateRef = useRef(null);
   const sortRef = useRef(null);
+  const dateInputRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
+        setIsStatusOpen(false);
+      }
       if (genreRef.current && !genreRef.current.contains(event.target)) {
         setIsGenreOpen(false);
       }
       if (ratingRef.current && !ratingRef.current.contains(event.target)) {
         setIsRatingOpen(false);
+      }
+      if (dateRef.current && !dateRef.current.contains(event.target)) {
+        setIsDateOpen(false);
       }
       if (sortRef.current && !sortRef.current.contains(event.target)) {
         setIsSortOpen(false);
@@ -37,8 +48,10 @@ export const MovieFilter = ({ filters, onChange }) => {
     onChange({ ...filters, search: e.target.value });
   };
 
+  const selectedStatus = filters.status || 'now-showing';
   const selectedGenres = filters.genres || [];
   const selectedRating = filters.rating || '';
+  const selectedDate = filters.date || '';
   const selectedSortBy = filters.sortBy || 'newest';
 
   const handleGenreToggle = (genre) => {
@@ -65,14 +78,71 @@ export const MovieFilter = ({ filters, onChange }) => {
       genres: [],
       rating: '',
       sortBy: 'newest',
+      status: 'now-showing',
+      date: '',
     });
   };
 
   const hasActiveFilters =
-    filters.search !== '' ||
+    (filters.search && filters.search !== '') ||
     selectedGenres.length > 0 ||
     selectedRating !== '' ||
+    selectedStatus !== 'now-showing' ||
+    selectedDate !== '' ||
     selectedSortBy !== 'newest';
+
+  const statusOptions = [
+    { value: 'now-showing', label: t('filter.nowShowing') },
+    { value: 'coming-soon', label: t('filter.comingSoon') },
+    { value: 'preview', label: t('filter.preview') },
+    { value: 'pre-release', label: t('filter.preRelease') },
+  ];
+
+  const dateOptions = useMemo(() => {
+    const options = [{ value: '', label: t('filter.dateAll') }];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const isoString = `${yyyy}-${mm}-${dd}`;
+      
+      let label = '';
+      if (i === 0) {
+        label = language === 'vi' ? 'Hôm nay' : 'Today';
+      } else if (i === 1) {
+        label = language === 'vi' ? 'Ngày mai' : 'Tomorrow';
+      } else {
+        label = d.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'short' });
+      }
+      const dateLabel = d.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'short', day: 'numeric' });
+      options.push({
+        value: isoString,
+        label: `${label} (${dateLabel})`,
+      });
+    }
+    return options;
+  }, [language, t]);
+
+  const selectedDateIsCustom = useMemo(() => {
+    if (!selectedDate) return false;
+    return !dateOptions.some((opt) => opt.value === selectedDate);
+  }, [selectedDate, dateOptions]);
+
+  const getFriendlyDateLabel = () => {
+    if (!selectedDate) return t('filter.dateAll');
+    const matched = dateOptions.find((opt) => opt.value === selectedDate);
+    if (matched) return matched.label;
+    
+    try {
+      const d = new Date(selectedDate);
+      return d.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    } catch {
+      return selectedDate;
+    }
+  };
 
   const ratingOptions = [
     { value: '', label: t('filter.ratingAll') },
@@ -157,12 +227,53 @@ export const MovieFilter = ({ filters, onChange }) => {
         </div>
       </div>
 
-      {/* Row 2: Genre Dropdown, Rating Dropdown, Sort Dropdown & Clear Filters */}
+      {/* Row 2: Status Dropdown, Genre Dropdown, Rating Dropdown, Date Dropdown, Sort Dropdown & Clear Filters */}
       <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
           <div className="flex items-center gap-1.5 text-gray-400 text-xs font-bold uppercase tracking-wider pr-1">
             <SlidersHorizontal size={13} className="text-gray-400" />
             <span>{t('filter.sortBy').split(':')[0]}:</span>
+          </div>
+
+          {/* Status filter dropdown */}
+          <div className="relative" ref={statusRef}>
+            <button
+              type="button"
+              onClick={() => setIsStatusOpen(!isStatusOpen)}
+              className={`w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 border text-sm rounded-xl transition-all hover:bg-gray-100 cursor-pointer ${
+                selectedStatus !== 'now-showing'
+                  ? 'border-brand/40 text-brand font-semibold bg-brand/5'
+                  : 'border-gray-200 text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 truncate max-w-[140px]">
+                <Film size={13} className={selectedStatus !== 'now-showing' ? 'text-brand' : 'text-gray-400'} />
+                {statusOptions.find((o) => o.value === selectedStatus)?.label || selectedStatus}
+              </span>
+              <ChevronDown size={14} className={`transition-transform duration-300 ${isStatusOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isStatusOpen && (
+              <div className="absolute left-0 mt-2 w-52 rounded-xl bg-white border border-gray-200 shadow-xl z-50 p-2 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                {statusOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      handleStatusChange(opt.value);
+                      setIsStatusOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                      selectedStatus === opt.value
+                        ? 'text-brand bg-brand/5 font-semibold'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {selectedStatus === opt.value && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Genre Multi-select dropdown */}
@@ -254,6 +365,81 @@ export const MovieFilter = ({ filters, onChange }) => {
                     {selectedRating === opt.value && <Check size={14} />}
                   </button>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Date filter dropdown */}
+          <div className="relative" ref={dateRef}>
+            <button
+              type="button"
+              onClick={() => setIsDateOpen(!isDateOpen)}
+              className={`w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 border text-sm rounded-xl transition-all hover:bg-gray-100 cursor-pointer ${
+                selectedDate !== ''
+                  ? 'border-brand/40 text-brand font-semibold bg-brand/5'
+                  : 'border-gray-200 text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 truncate max-w-[160px]">
+                <Calendar size={13} className={selectedDate !== '' ? 'text-brand' : 'text-gray-400'} />
+                {getFriendlyDateLabel()}
+              </span>
+              <ChevronDown size={14} className={`transition-transform duration-300 ${isDateOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isDateOpen && (
+              <div className="absolute left-0 mt-2 w-56 rounded-xl bg-white border border-gray-200 shadow-xl z-50 p-2 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="max-h-60 overflow-y-auto space-y-0.5 pr-0.5">
+                  {dateOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        onChange({ ...filters, date: opt.value });
+                        setIsDateOpen(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                        selectedDate === opt.value
+                          ? 'text-brand bg-brand/5 font-semibold'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {selectedDate === opt.value && <Check size={14} />}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Custom date input option */}
+                <div className="border-t border-gray-200 my-1 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (dateInputRef.current) {
+                        dateInputRef.current.showPicker();
+                      }
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                      selectedDateIsCustom
+                        ? 'text-brand bg-brand/5 font-semibold'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="truncate max-w-[130px]">
+                      {selectedDateIsCustom ? getFriendlyDateLabel() : t('filter.customDate')}
+                    </span>
+                    <Calendar size={14} className="text-gray-400 shrink-0" />
+                  </button>
+                  <input
+                    type="date"
+                    ref={dateInputRef}
+                    value={selectedDateIsCustom ? selectedDate : ''}
+                    onChange={(e) => {
+                      onChange({ ...filters, date: e.target.value });
+                      setIsDateOpen(false);
+                    }}
+                    className="absolute opacity-0 w-0 h-0 pointer-events-none"
+                  />
+                </div>
               </div>
             )}
           </div>
