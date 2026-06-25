@@ -40,17 +40,17 @@ const seedData = async () => {
       process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/movie-ticket-booking'
     );
     console.log('✅ Connected!\n');
- 
+
     // Check if backup files exist and use them instead of hardcoded seed
     const fs = require('fs');
     const path = require('path');
     const BACKUP_DIR = path.join(__dirname, '..', 'data', 'db-backup');
-    const backupExists = fs.existsSync(BACKUP_DIR) && 
-                         fs.readdirSync(BACKUP_DIR).some(file => file.endsWith('.json'));
+    const backupExists = fs.existsSync(BACKUP_DIR) &&
+      fs.readdirSync(BACKUP_DIR).some(file => file.endsWith('.json'));
 
     if (backupExists) {
       console.log('📂 Found database backup in data/db-backup/. Restoring from backup instead of default seed...\n');
-      
+
       console.log('🗑️  Clearing all old collections...');
       const MODELS_MAP = {
         users: User,
@@ -75,7 +75,7 @@ const seedData = async () => {
           console.log(`📥 Importing collection: ${key}...`);
           const fileContent = fs.readFileSync(filePath, 'utf-8');
           const documents = JSON.parse(fileContent);
-          
+
           if (documents && documents.length > 0) {
             await Model.insertMany(documents);
             console.log(`   ✔ Imported ${documents.length} documents into ${key}`);
@@ -1112,16 +1112,16 @@ const seedData = async () => {
 
       const concessionItems = hasConcession && theaterConcessions.length > 0
         ? [
-            {
-              concession: theaterConcessions[i % theaterConcessions.length]._id,
-              quantity: randomBetween(1, 2),
-            },
-          ]
+          {
+            concession: theaterConcessions[i % theaterConcessions.length]._id,
+            quantity: randomBetween(1, 2),
+          },
+        ]
         : [];
 
       const concessionTotal = hasConcession && theaterConcessions.length > 0
         ? theaterConcessions[i % theaterConcessions.length].price *
-          concessionItems[0].quantity
+        concessionItems[0].quantity
         : 0;
 
       const totalPrice = seatTotal + concessionTotal;
