@@ -205,10 +205,11 @@ export const PaymentPage = () => {
       setBookingId(null);
       setQrData(null);
       setMomoData(null);
-      if (isManual) {
-        navigate(-1);
-      } else {
-        navigate('/');
+      
+      // If time expires automatically, go to booking history.
+      // If user cancels manually, stay on the payment selection page instead of going back to seat selection.
+      if (!isManual) {
+        navigate('/history');
       }
     } catch (err) {
       console.error('Lỗi khi hủy đặt vé:', err);
