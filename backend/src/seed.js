@@ -40,17 +40,17 @@ const seedData = async () => {
       process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/movie-ticket-booking'
     );
     console.log('✅ Connected!\n');
- 
+
     // Check if backup files exist and use them instead of hardcoded seed
     const fs = require('fs');
     const path = require('path');
     const BACKUP_DIR = path.join(__dirname, '..', 'data', 'db-backup');
-    const backupExists = fs.existsSync(BACKUP_DIR) && 
-                         fs.readdirSync(BACKUP_DIR).some(file => file.endsWith('.json'));
+    const backupExists = fs.existsSync(BACKUP_DIR) &&
+      fs.readdirSync(BACKUP_DIR).some(file => file.endsWith('.json'));
 
     if (backupExists) {
       console.log('📂 Found database backup in data/db-backup/. Restoring from backup instead of default seed...\n');
-      
+
       console.log('🗑️  Clearing all old collections...');
       const MODELS_MAP = {
         users: User,
@@ -75,7 +75,7 @@ const seedData = async () => {
           console.log(`📥 Importing collection: ${key}...`);
           const fileContent = fs.readFileSync(filePath, 'utf-8');
           const documents = JSON.parse(fileContent);
-          
+
           if (documents && documents.length > 0) {
             await Model.insertMany(documents);
             console.log(`   ✔ Imported ${documents.length} documents into ${key}`);
@@ -1009,7 +1009,7 @@ const seedData = async () => {
         name: 'Pepsi size L',
         description: 'Nước ngọt có ga Pepsi lạnh, ly 500ml.',
         price: 35000,
-        imageUrl: 'https://images.unsplash.com/photo-1629203851020-904c04e5bc19?auto=format&fit=crop&q=80&w=400',
+        imageUrl: 'https://images.pexels.com/photos/1292294/pexels-photo-1292294.jpeg?auto=compress&cs=tinysrgb&w=400',
         type: 'drink',
         active: true,
       },
@@ -1017,7 +1017,7 @@ const seedData = async () => {
         name: 'Nước suối Lavie',
         description: 'Nước khoáng thiên nhiên Lavie 500ml, thanh mát và tinh khiết.',
         price: 20000,
-        imageUrl: 'https://images.unsplash.com/photo-1616118132261-edb26e47e58a?auto=format&fit=crop&q=80&w=400',
+        imageUrl: 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&q=80&w=400',
         type: 'drink',
         active: true,
       },
@@ -1042,7 +1042,7 @@ const seedData = async () => {
         name: 'Combo Gia Đình',
         description: '2 bắp rang bơ size L + 4 ly nước ngọt + 1 phần Nachos. Dành cho cả gia đình.',
         price: 280000,
-        imageUrl: 'https://images.unsplash.com/photo-1536098579074-406eacab074e?auto=format&fit=crop&q=80&w=400',
+        imageUrl: 'https://images.pexels.com/photos/33129/popcorn-movie-party-entertainment.jpg?auto=compress&cs=tinysrgb&w=400',
         type: 'combo',
         active: true,
       },
@@ -1112,16 +1112,16 @@ const seedData = async () => {
 
       const concessionItems = hasConcession && theaterConcessions.length > 0
         ? [
-            {
-              concession: theaterConcessions[i % theaterConcessions.length]._id,
-              quantity: randomBetween(1, 2),
-            },
-          ]
+          {
+            concession: theaterConcessions[i % theaterConcessions.length]._id,
+            quantity: randomBetween(1, 2),
+          },
+        ]
         : [];
 
       const concessionTotal = hasConcession && theaterConcessions.length > 0
         ? theaterConcessions[i % theaterConcessions.length].price *
-          concessionItems[0].quantity
+        concessionItems[0].quantity
         : 0;
 
       const totalPrice = seatTotal + concessionTotal;
