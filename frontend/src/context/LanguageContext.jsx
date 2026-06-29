@@ -23,6 +23,9 @@ const translations = {
     'home.watchTrailer': 'Xem Trailer',
     'home.discover': 'Khám Phá Phim',
     'home.loadingError': 'Lỗi khi tải danh sách phim',
+    'home.bestSellers': 'Top Phim Bán Chạy',
+    'home.bestSellersDesc': 'Danh sách các bộ phim đang được đặt vé nhiều nhất tại hệ thống rạp',
+    'home.ticketsSold': 'vé đã bán',
 
     // Footer
     'footer.desc': 'Tận hưởng trải nghiệm đặt vé xem phim tuyệt vời. Lựa chọn ghế ngồi ưng ý, đồ ăn vặt hấp dẫn và thanh toán an toàn chỉ với vài cú nhấp chuột.',
@@ -270,6 +273,7 @@ const translations = {
     'history.status.paid': 'Đã thanh toán',
     'history.status.pending': 'Chờ xử lý',
     'history.status.refunded': 'Đã hoàn tiền',
+    'history.status.failed': 'Thanh toán thất bại',
     'history.unknownTime': 'Thời gian chưa xác định',
     'history.noSeats': 'Chưa chọn ghế',
     'history.totalPayment': 'Tổng thanh toán',
@@ -327,6 +331,11 @@ const translations = {
     'filter.sort.durationDesc': 'Thời lượng giảm dần',
     'filter.sort.titleAZ': 'Tên phim (A-Z)',
     'filter.clearAll': 'Xóa bộ lọc',
+    'filter.status': 'Trạng thái',
+    'filter.statusAll': 'Tất cả trạng thái',
+    'filter.date': 'Ngày chiếu',
+    'filter.dateAll': 'Tất cả ngày chiếu',
+    'filter.customDate': 'Chọn ngày khác...',
     'movies.title': 'Danh mục phim',
     'movies.subtitle': 'Duyệt danh sách phim đang chiếu hoặc xem trước các phim sắp ra mắt.',
     // Showtime filters & sorting
@@ -359,6 +368,9 @@ const translations = {
     'home.watchTrailer': 'Watch Trailer',
     'home.discover': 'Discover Movies',
     'home.loadingError': 'Error loading movie list',
+    'home.bestSellers': 'Top Best Selling',
+    'home.bestSellersDesc': 'The most popular and top-selling movies in theaters right now',
+    'home.ticketsSold': 'tickets sold',
 
     // Footer
     'footer.desc': 'Enjoy the ultimate movie ticket booking experience. Select your preferred seats, delicious snacks, and pay securely in just a few clicks.',
@@ -606,6 +618,7 @@ const translations = {
     'history.status.paid': 'Paid',
     'history.status.pending': 'Pending',
     'history.status.refunded': 'Refunded',
+    'history.status.failed': 'Payment Failed',
     'history.unknownTime': 'Unknown Time',
     'history.noSeats': 'No seats selected',
     'history.totalPayment': 'Total Payment',
@@ -663,6 +676,11 @@ const translations = {
     'filter.sort.durationDesc': 'Duration (Long to Short)',
     'filter.sort.titleAZ': 'Title (A-Z)',
     'filter.clearAll': 'Clear filters',
+    'filter.status': 'Status',
+    'filter.statusAll': 'All Statuses',
+    'filter.date': 'Show Date',
+    'filter.dateAll': 'All Show Dates',
+    'filter.customDate': 'Choose other date...',
     'movies.title': 'Movie Catalog',
     'movies.subtitle': 'Browse the list of movies now showing or preview upcoming releases.',
     // Showtime filters & sorting

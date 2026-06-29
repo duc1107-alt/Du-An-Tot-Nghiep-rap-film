@@ -41,12 +41,13 @@ export const ShowtimeManager = () => {
     setModalRoomsLoading(true);
     try {
       const rmRes = await adminService.getRooms(theaterId);
-      const roomArr = Array.isArray(rmRes) ? rmRes : [];
+      // API interceptor unwraps to response.data = { success, data: [...], count }
+      const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
       setModalRooms(roomArr);
-      // Tự động chọn phòng đầu tiên
-      if (roomArr.length > 0) {
+      // Không tự động ghi đè roomId khi đang edit
+      if (roomArr.length > 0 && !editingShowtime) {
         setForm((prev) => ({ ...prev, roomId: roomArr[0]._id }));
-      } else {
+      } else if (roomArr.length === 0) {
         setForm((prev) => ({ ...prev, roomId: '' }));
       }
     } catch (err) {
@@ -55,7 +56,7 @@ export const ShowtimeManager = () => {
     } finally {
       setModalRoomsLoading(false);
     }
-  }, []);
+  }, [editingShowtime]);
 
   // ────────────────────────────────────────────────
   // Load lịch chiếu + phòng của rạp đang xem
@@ -67,8 +68,11 @@ export const ShowtimeManager = () => {
         adminService.getRooms(theaterId),
         bookingService.getShowtimes({ theaterId }),
       ]);
-      setRooms(Array.isArray(rmRes) ? rmRes : []);
-      setShowtimes(Array.isArray(stRes) ? stRes : []);
+      // Unwrap {success, data: [...]} nếu cần
+      const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
+      const stArr = Array.isArray(stRes) ? stRes : (Array.isArray(stRes?.data) ? stRes.data : []);
+      setRooms(roomArr);
+      setShowtimes(stArr);
     } catch (err) {
       console.error('Lỗi reload lịch chiếu:', err);
     }
@@ -83,7 +87,8 @@ export const ShowtimeManager = () => {
       try {
         // Lấy tất cả rạp
         const thRes = await adminService.getTheaters();
-        const thArr = Array.isArray(thRes) ? thRes : [];
+        // Unwrap {success, data: [...]} nếu cần
+        const thArr = Array.isArray(thRes) ? thRes : (Array.isArray(thRes?.data) ? thRes.data : []);
         setTheaters(thArr);
 
         const firstTheaterId = thArr[0]?._id || '';
@@ -94,7 +99,8 @@ export const ShowtimeManager = () => {
 
         // Lấy TẤT CẢ phim cho admin (không lọc status)
         const mvRes = await movieService.getMovies();
-        const mvArr = Array.isArray(mvRes) ? mvRes : [];
+        // Unwrap {success, data: [...]} nếu cần
+        const mvArr = Array.isArray(mvRes) ? mvRes : (Array.isArray(mvRes?.data) ? mvRes.data : []);
         setMovies(mvArr);
 
         // Load phòng + lịch chiếu của rạp đầu tiên
@@ -103,8 +109,10 @@ export const ShowtimeManager = () => {
             adminService.getRooms(firstTheaterId),
             bookingService.getShowtimes({ theaterId: firstTheaterId }),
           ]);
-          setRooms(Array.isArray(rmRes) ? rmRes : []);
-          setShowtimes(Array.isArray(stRes) ? stRes : []);
+          const roomArr = Array.isArray(rmRes) ? rmRes : (Array.isArray(rmRes?.data) ? rmRes.data : []);
+          const stArr = Array.isArray(stRes) ? stRes : (Array.isArray(stRes?.data) ? stRes.data : []);
+          setRooms(roomArr);
+          setShowtimes(stArr);
         }
       } catch (err) {
         console.error('Lỗi khởi tạo ShowtimeManager:', err);
@@ -243,10 +251,10 @@ export const ShowtimeManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-dark-border pb-4 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 pb-4 gap-4">
         <div>
-          <h3 className="text-lg font-black text-zinc-200">Lịch Chiếu Phim</h3>
-          <p className="text-xs text-zinc-500 mt-1">
+          <h3 className="text-lg font-black text-gray-800">Lịch Chiếu Phim</h3>
+          <p className="text-xs text-gray-500 mt-1">
             Cấu hình thời gian chiếu phim, sức chứa phòng và giá vé cơ bản.
           </p>
         </div>
@@ -256,7 +264,7 @@ export const ShowtimeManager = () => {
           <select
             value={selectedTheater}
             onChange={handleTheaterChange}
-            className="bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm font-semibold py-2 px-3 rounded-xl focus:border-brand outline-none cursor-pointer"
+            className="bg-gray-50 border border-gray-200 text-gray-700 text-sm font-semibold py-2 px-3 rounded-xl focus:border-brand outline-none cursor-pointer"
           >
             {theaters.map((th) => (
               <option key={th._id} value={th._id}>
@@ -278,17 +286,17 @@ export const ShowtimeManager = () => {
 
       {/* Danh sách dạng lưới theo các phòng đang hoạt động */}
       {rooms.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
           <Building2 size={40} className="mb-3 opacity-30" />
           <p className="text-sm">Rạp này chưa có phòng chiếu nào. Hãy tạo phòng trong tab "Phòng Chiếu".</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {rooms.map((room) => (
-            <div key={room._id} className="bg-dark-card border border-dark-border p-5 rounded-3xl space-y-4 shadow-sm">
-              <div className="flex justify-between items-center border-b border-dark-border pb-2.5">
-                <h4 className="font-bold text-zinc-200 text-sm">{room.name}</h4>
-                <span className="text-[10px] uppercase tracking-wider font-extrabold text-zinc-500 bg-zinc-900 px-2 py-0.5 border border-dark-border rounded">
+            <div key={room._id} className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-sm">
+              <div className="flex justify-between items-center border-b border-gray-200 pb-2.5">
+                <h4 className="font-bold text-gray-800 text-sm">{room.name}</h4>
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-gray-500 bg-gray-50 px-2 py-0.5 border border-gray-200 rounded">
                   {room.type}
                 </span>
               </div>
@@ -300,7 +308,7 @@ export const ShowtimeManager = () => {
                 );
                 if (roomShowtimes.length === 0) {
                   return (
-                    <p className="text-xs text-zinc-500 italic">
+                    <p className="text-xs text-gray-400 italic">
                       Chưa có lịch chiếu. Nhấn "Tạo Lịch Chiếu" để thêm.
                     </p>
                   );
@@ -322,19 +330,19 @@ export const ShowtimeManager = () => {
                       return (
                         <div
                           key={st._id}
-                          className="flex items-center justify-between bg-zinc-900/60 border border-dark-border/40 p-3 rounded-2xl gap-3"
+                          className="flex items-center justify-between bg-gray-50/50 border border-gray-100 p-3 rounded-2xl gap-3"
                         >
                           <div className="min-w-0 flex-grow">
-                            <div className="font-bold text-zinc-200 text-xs truncate">
+                            <div className="font-bold text-gray-800 text-xs truncate">
                               {st.movie?.title || 'Phim đã bị xóa'}
                             </div>
-                            <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
+                            <div className="text-[10px] text-gray-500 flex items-center gap-1.5 mt-0.5">
                               <Calendar size={10} className="text-brand" />
                               <span>{startFmt}</span>
                               <span>→</span>
                               <span>{endFmt}</span>
                               <span>&bull;</span>
-                              <span className="text-zinc-400 font-extrabold">{st.format}</span>
+                              <span className="text-gray-650 font-extrabold">{st.format}</span>
                             </div>
                             <div className="text-[10px] text-brand font-black mt-0.5">
                               {st.ticketPrice.toLocaleString()} VND
@@ -343,14 +351,14 @@ export const ShowtimeManager = () => {
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => handleOpenEditShowtime(st)}
-                              className="p-1.5 bg-zinc-950 border border-dark-border hover:border-brand/40 text-zinc-500 hover:text-brand rounded-lg transition-all"
+                              className="p-1.5 bg-white border border-gray-200 hover:border-brand/40 text-gray-500 hover:text-brand rounded-lg transition-all"
                               title="Chỉnh sửa lịch chiếu"
                             >
                               <Edit2 size={12} />
                             </button>
                             <button
                               onClick={() => handleDeleteShowtime(st._id)}
-                              className="p-1.5 bg-zinc-950 border border-dark-border hover:border-red-500/40 text-zinc-500 hover:text-red-400 rounded-lg transition-all"
+                              className="p-1.5 bg-white border border-gray-200 hover:border-red-500/40 text-gray-500 hover:text-red-500 rounded-lg transition-all"
                               title="Xóa lịch chiếu"
                             >
                               <Trash2 size={12} />
@@ -384,14 +392,14 @@ export const ShowtimeManager = () => {
 
           {/* Chọn phim */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">
+            <label className="block text-sm font-bold text-gray-800 mb-1.5 pl-0.5">
               Chọn Phim
             </label>
             <select
               name="movieId"
               value={form.movieId}
               onChange={handleChange}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
               required
             >
               {movies.length === 0 ? (
@@ -408,14 +416,14 @@ export const ShowtimeManager = () => {
 
           {/* Chọn rạp (trong modal) */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">
+            <label className="block text-sm font-bold text-gray-800 mb-1.5 pl-0.5">
               Rạp Chiếu
             </label>
             <select
               name="theaterId"
               value={form.theaterId}
               onChange={handleChange}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
               required
             >
               {theaters.map((th) => (
@@ -428,7 +436,7 @@ export const ShowtimeManager = () => {
 
           {/* Chọn phòng chiếu */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">
+            <label className="block text-sm font-bold text-gray-800 mb-1.5 pl-0.5">
               Phòng Chiếu
               {modalRoomsLoading && (
                 <Loader2 size={12} className="inline ml-2 animate-spin text-brand" />
@@ -438,7 +446,7 @@ export const ShowtimeManager = () => {
               name="roomId"
               value={form.roomId}
               onChange={handleChange}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer disabled:opacity-50"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer disabled:opacity-50"
               required
               disabled={modalRoomsLoading}
             >
@@ -455,7 +463,7 @@ export const ShowtimeManager = () => {
               )}
             </select>
             {!modalRoomsLoading && modalRooms.length === 0 && (
-              <p className="text-xs text-amber-400 mt-1.5 pl-0.5">
+              <p className="text-xs text-amber-600 mt-1.5 pl-0.5">
                 ⚠ Rạp này chưa có phòng chiếu. Hãy tạo phòng trong tab "Phòng Chiếu" trước.
               </p>
             )}
@@ -464,14 +472,14 @@ export const ShowtimeManager = () => {
           {/* Định dạng và giá vé */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5 pl-0.5">
+              <label className="block text-sm font-bold text-gray-800 mb-1.5 pl-0.5">
                 Định Dạng Chiếu
               </label>
               <select
                 name="format"
                 value={form.format}
                 onChange={handleChange}
-                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
+                className="w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-lg py-2.5 px-3 focus:border-brand outline-none cursor-pointer"
               >
                 <option value="2D">2D</option>
                 <option value="3D">3D</option>
@@ -499,7 +507,7 @@ export const ShowtimeManager = () => {
             required
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-dark-border">
+          <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
             <Button onClick={() => setIsOpen(false)} variant="secondary" className="px-5 py-2">
               Hủy
             </Button>
